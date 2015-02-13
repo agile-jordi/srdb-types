@@ -13,6 +13,7 @@ class NotNullColumnDbTypesTest extends FlatSpec with MockFactory {
   behavior of "not null DbType implicit conversion"
 
   import com.agilogy.srdb.types._
+
   import DbType._
 
 

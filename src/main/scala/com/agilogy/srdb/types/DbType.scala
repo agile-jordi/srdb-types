@@ -16,7 +16,20 @@ sealed trait DbType[T] extends DbReader[T] {
 }
 
 trait DbTypeWithNameAccess[T] extends DbType[T]{
+  self =>
+  
   def get(rs: ResultSet, name: String): T
+
+  def xmap[T2](f:T => T2, xf:T2 => T): DbTypeWithNameAccess[T2] = new DbTypeWithNameAccess[T2] {
+    
+    override def get(rs: ResultSet, name: String): T2 = f(self.get(rs,name))
+
+    override def set(ps: PreparedStatement, pos: Int, value: T2): Unit = self.set(ps,pos,xf(value))
+
+    override val length: Int = self.length
+
+    override def get(rs: ResultSet): T2 = f(self.get(rs))
+  }
 }
 
 case class NamedDbType[T](dbType:DbTypeWithNameAccess[T], as:String) extends DbTypeWithNameAccess[T] {
@@ -28,12 +41,23 @@ case class NamedDbType[T](dbType:DbTypeWithNameAccess[T], as:String) extends DbT
   override def set(ps: PreparedStatement, pos: Int, value: T): Unit = dbType.set(ps,pos,value)
 
   override val length: Int = dbType.length
+
 }
 
 trait PositionalDbType[T] extends DbType[T] {
+  self =>
   def get(rs: ResultSet): T = get(rs, 1)
 
   def get(rs: ResultSet, pos: Int): T
+
+  def xmap[T2](f:T => T2, xf:T2 => T): PositionalDbType[T2] = new PositionalDbType[T2]{
+    
+    override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs,pos))
+
+    override def set(ps: PreparedStatement, pos: Int, value: T2): Unit = self.set(ps,pos,xf(value))
+
+    override val length: Int = self.length
+  }
 }
 
 object DbType extends AtomicDbTypeImplicits {

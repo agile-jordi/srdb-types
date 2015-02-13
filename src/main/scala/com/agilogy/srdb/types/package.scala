@@ -21,6 +21,8 @@ package object types {
   implicit class DbTypeWithNameAccessReader[T](dbType:DbTypeWithNameAccess[T]) extends (ResultSet => T) {
     override def apply(rs: ResultSet): T = dbType.get(rs)
   }
+  
+  def dbType[T:PositionalDbType]:PositionalDbType[T] = implicitly[PositionalDbType[T]]
 
   def reader[T:PositionalDbType]: ResultSet => T = rs => implicitly[PositionalDbType[T]].get(rs,1)
 

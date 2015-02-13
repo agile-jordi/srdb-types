@@ -3,8 +3,21 @@ package com.agilogy.srdb.types
 import java.sql.{ResultSet, PreparedStatement}
 
 sealed trait AtomicDbType[T] extends PositionalDbType[T] with DbTypeWithNameAccess[T] {
+  self =>
   final val length = 1
   val jdbcTypes: Seq[JdbcType]
+  
+  override def xmap[T2](f:T => T2, xf:T2 => T): AtomicDbType[T2] = new AtomicDbType[T2] {
+    
+    override val jdbcTypes: Seq[JdbcType] = self.jdbcTypes
+
+    override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs,pos))
+
+    override def get(rs: ResultSet, name: String): T2 = f(self.get(rs,name))
+
+    override def set(ps: PreparedStatement, pos: Int, value: T2): Unit = self.set(ps,pos,xf(value))
+  }
+
 }
 
 trait AtomicDbTypeImplicits {
