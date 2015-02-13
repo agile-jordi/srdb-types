@@ -2,7 +2,7 @@ package com.agilogy.srdb.types
 
 import java.sql.{ResultSet, PreparedStatement}
 
-sealed trait AtomicDbType[T] extends PositionalDbType[T]  {
+sealed trait AtomicDbType[T] extends PositionalDbType[T] with DbTypeWithNameAccess[T] {
   final val length = 1
   val jdbcTypes: Seq[JdbcType]
 }
