@@ -4,7 +4,7 @@ import java.sql._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class NotNullColumnDbTypesTest extends FlatSpec with MockFactory {
+class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
@@ -13,8 +13,6 @@ class NotNullColumnDbTypesTest extends FlatSpec with MockFactory {
   behavior of "not null DbType implicit conversion"
 
   import com.agilogy.srdb.types._
-
-  import DbType._
 
 
   it should "prepare statements with a Byte param and read resultsets with a Byte column" in {

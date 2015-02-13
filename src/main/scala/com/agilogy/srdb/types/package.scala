@@ -1,46 +1,31 @@
 package com.agilogy.srdb
 
-import java.sql.{ResultSet, Types, PreparedStatement}
+import java.sql.{ResultSet, PreparedStatement}
 
-
-package object types {
+package object types extends AtomicDbTypeImplicits with DbTypeImplicits with DbReaderImplicits {
 
   class NullColumnReadException extends RuntimeException
-  
-  def set[T:DbType](ps:PreparedStatement, pos:Int, value:T):Unit = implicitly[DbType[T]].set(ps,pos,value)
-  def get[T:PositionalDbType](rs:ResultSet, pos:Int):T = implicitly[PositionalDbType[T]].get(rs,pos)
-  def get[T:NamedDbType](rs:ResultSet, name:String):T = implicitly[NamedDbType[T]].get(rs,name)
+
+  def set[T:DbWriter](ps:PreparedStatement,value:T):Unit = implicitly[DbWriter[T]].set(ps,1,value)
+  def set[T:DbWriter](ps:PreparedStatement, pos:Int, value:T):Unit = implicitly[DbWriter[T]].set(ps,pos,value)
+  def get[T:DbReader](rs:ResultSet):T = implicitly[DbReader[T]].get(rs)
+  def get[T:DbReader](rs:ResultSet, pos:Int):T = implicitly[DbReader[T]].get(rs,pos)
+  def get[T:DbReader](rs:ResultSet, name:String):T = implicitly[DbReader[T]].get(rs,name)
 
   type ArgumentsSetter = PreparedStatement => Unit
-  type Reader[T] = ResultSet => T
+  type ResultSetReader[T] = ResultSet => T
   
-  implicit class ArgumentsSetterFromValue[T:DbType](value:T) extends ArgumentsSetter {
-    override def apply(ps: PreparedStatement): Unit = set(ps,1,value)
-  }
-  
-  implicit class DbTypeWithNameAccessReader[T](dbType:DbTypeWithNameAccess[T]) extends (ResultSet => T) {
-    override def apply(rs: ResultSet): T = dbType.get(rs)
-  }
-  
-  def dbType[T:PositionalDbType]:PositionalDbType[T] = implicitly[PositionalDbType[T]]
-
-  def reader[T:PositionalDbType]: ResultSet => T = rs => implicitly[PositionalDbType[T]].get(rs,1)
-
-  def reader[T:AtomicDbType](name:String):NamedDbType[T] = NamedDbType[T](implicitly[AtomicDbType[T]],name)
-
-  def combine[T1,T2](dbTypes:(DbTypeWithNameAccess[T1],DbTypeWithNameAccess[T2])):DbTypeWithNameAccess[(T1,T2)] = new DbTypeWithNameAccess[(T1,T2)] {
-    override def get(rs: ResultSet, name: String): (T1, T2) = (dbTypes._1.get(rs,name),dbTypes._2.get(rs,name))
-
-    private val (t1,t2) = dbTypes
-
-    override def set(ps: PreparedStatement, pos: Int, value: (T1, T2)): Unit = {
-      t1.set(ps, pos, value._1)
-      t2.set(ps, pos + t1.length, value._2)
-    }
-
-    override val length: Int = t1.length + t2.length
-
-    override def get(rs: ResultSet): (T1, T2) = (dbTypes._1.get(rs),dbTypes._2.get(rs))
+  implicit class DbWriterArgumentsSetter[T:DbWriter](value:T) extends ArgumentsSetter {
+    override def apply(ps: PreparedStatement): Unit = set(ps,value)
   }
 
+  implicit class DbReaderResultSetReader[T](dbReader:DbReader[T]) extends (ResultSet => T) {
+    override def apply(rs: ResultSet): T = get(rs)(dbReader)
+  }
+  
+  def dbType[T:DbType]:DbType[T] = implicitly[DbType[T]]
+
+  def reader[T:DbReader]: ResultSet => T = rs => implicitly[DbReader[T]].get(rs,1)
+
+  def reader[T:DbReader](name:String):NamedDbReader[T] = NamedDbReader[T](implicitly[DbReader[T]],name)
 }

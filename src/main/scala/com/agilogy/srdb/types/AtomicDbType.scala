@@ -2,29 +2,20 @@ package com.agilogy.srdb.types
 
 import java.sql.{ResultSet, PreparedStatement}
 
-sealed trait AtomicDbType[T] extends PositionalDbType[T] with DbTypeWithNameAccess[T] {
+sealed trait AtomicDbType[T] extends DbType[T] {
   self =>
-  final val length = 1
-  val jdbcTypes: Seq[JdbcType]
   
-  override def xmap[T2](f:T => T2, xf:T2 => T): AtomicDbType[T2] = new AtomicDbType[T2] {
-    
-    override val jdbcTypes: Seq[JdbcType] = self.jdbcTypes
-
-    override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs,pos))
-
-    override def get(rs: ResultSet, name: String): T2 = f(self.get(rs,name))
-
-    override def set(ps: PreparedStatement, pos: Int, value: T2): Unit = self.set(ps,pos,xf(value))
-  }
+  final val length = 1
+  
+  val jdbcTypes: Seq[JdbcType]
 
 }
 
 trait AtomicDbTypeImplicits {
 
-  implicit def notNull[T: UnsafeAtomicDbType]: AtomicDbType[T] = new AtomicDbType[T] {
+  implicit def notNull[T: TypeMap]: AtomicDbType[T] = new AtomicDbType[T] {
 
-    private val udbt = implicitly[UnsafeAtomicDbType[T]]
+    private val udbt = implicitly[TypeMap[T]]
 
     override val jdbcTypes: Seq[JdbcType] = udbt.jdbcTypes
 
@@ -38,9 +29,9 @@ trait AtomicDbTypeImplicits {
     override def get(rs: ResultSet, name: String): T = udbt.get(rs,name).getOrElse(throw new NullColumnReadException())
   }
 
-  implicit def optional[T: UnsafeAtomicDbType]: AtomicDbType[Option[T]] = new AtomicDbType[Option[T]] {
+  implicit def optional[T: TypeMap]: AtomicDbType[Option[T]] = new AtomicDbType[Option[T]] {
 
-    lazy val tDbType = implicitly[UnsafeAtomicDbType[T]]
+    lazy val tDbType = implicitly[TypeMap[T]]
 
     override def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = {
       value match {

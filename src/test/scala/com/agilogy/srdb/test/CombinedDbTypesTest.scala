@@ -6,7 +6,7 @@ import com.agilogy.srdb.types
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class CombinedPositionalDbTypeTest extends FlatSpec with MockFactory{
+class CombinedDbTypesTest extends FlatSpec with MockFactory{
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
@@ -41,7 +41,7 @@ class CombinedPositionalDbTypeTest extends FlatSpec with MockFactory{
       (rs.getInt(_:String)).expects("age").returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(combine(reader[String]("name"), reader[Int]("age"))) === ("John",23))
+    assert(db.read(combinedReader(reader[String]("name"), reader[Int]("age"))) === ("John",23))
   }
 
 }

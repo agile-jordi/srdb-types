@@ -4,7 +4,7 @@ import java.sql._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class OptionalColumnDbTypesTest extends FlatSpec with MockFactory {
+class OptionalAtomicDbTypesTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
@@ -13,19 +13,24 @@ class OptionalColumnDbTypesTest extends FlatSpec with MockFactory {
   behavior of "optional DbType implicit conversion"
 
   import com.agilogy.srdb.types._
-  import DbType._
 
   it should "set null parameters using None values of type Option[T]" in {
     inSequence {
       (ps.setNull(_:Int , _:Int)).expects(1, Types.INTEGER)
-      (rs.getInt(_: Int)).expects(1).returning(3)
-      (rs.wasNull _).expects().returning(false)
     }
     val optInt:Option[Int] = None
     db.prepare(optInt)
-    db.read(reader[Int])
   }
 
+
+  it should "set optinoal parameters using Some(v) of type Option[T]" in {
+    inSequence {
+      (ps.setInt(_:Int , _:Int)).expects(1,3)
+    }
+    val optInt:Option[Int] = Some(3)
+    db.prepare(optInt)
+  }
+  
   it should "read null parameters as None of type Option[T]" in {
     inSequence {
       (ps.setInt(_, _)).expects(1, 3)
@@ -37,4 +42,13 @@ class OptionalColumnDbTypesTest extends FlatSpec with MockFactory {
   }
 
 
+  it should "read optional parameters as Some(v) of type Option[T]" in {
+    inSequence {
+      (ps.setInt(_, _)).expects(1, 3)
+      (rs.getInt(_: Int)).expects(1).returning(3)
+      (rs.wasNull _).expects().returning(false)
+    }
+    db.prepare(3)
+    assert(db.read(reader[Option[Int]]) === Some(3))
+  }
 }
