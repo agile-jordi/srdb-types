@@ -32,7 +32,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "named db types xmap"
 
   it should "create a new db type mapping over a function" in {
-    implicit val nameDbType: DbType[Name] = dbType[String].xmap[Name](Name.apply,_.v)
+    implicit val nameDbType: DbType[Name] = notNull[String].xmap[Name](Name.apply,_.v)
     implicit val nameReader = nameDbType.as("name")
     inSequence{
       (ps.setString _).expects(1,"Jane")
@@ -46,9 +46,12 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "combined db types xmap"
   
   case class Person(name:String, age:Int)
+  
 
   it should "create a new db type mapping over a function" in {
-    implicit val personDbType = dbType[(String,Int)].xmap[Person]({case ((n,a)) => Person(n,a)},p => p.name -> p.age)
+//    def caseClassReader[I:DbType,O](s:{def tupled(i:I):O}):DbReader[O] = implicitly[DbType[I]].map(s.tupled)
+//    implicit val personReader:DbReader[Person] = caseClassReader[(String,Int),Person](Person)
+    implicit val personDbType = dbType[(String,Int)].xmap[Person](Person.tupled,Person.unapply(_).get)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (ps.setInt _).expects(2,25)
@@ -64,7 +67,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "combined named db types map"
 
   it should "create a new db type mapping over a function" in {
-    implicit val personReader = combinedReader(reader[String]("name"),reader[Int]("age")).map[Person]({case ((n,a)) => Person(n,a)})
+    implicit val personReader = combineReader(DbString.notNull("name"),DbInt.notNull("age")).map[Person]({case ((n,a)) => Person(n,a)})
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
@@ -74,4 +77,17 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
     assert(db.read(personReader) === Person("John",23))
   }
 
+
+  def read[T:DbReader,T2](rs:ResultSet, f:T => T2):T2 = implicitly[DbReader[T]].map(f).get(rs)
+
+  it should "read using the new read function" in{
+    (rs.getString(_:Int)).expects(1).returning("John")
+    (rs.wasNull _).expects().returning(false)
+    (rs.getInt(_:Int)).expects(2).returning(23)
+    (rs.wasNull _).expects().returning(false)
+
+    assert(read(rs, (Person.apply _).tupled) === Person("John",23))
+
+  }
+  
 }

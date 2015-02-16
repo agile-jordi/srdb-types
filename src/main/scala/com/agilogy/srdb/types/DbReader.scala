@@ -31,9 +31,8 @@ trait DbReader[T] {
 
 }
 
-case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[T] {
 
-  self =>
+case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[T] {
 
   override val length: Int = dbReader.length
 
@@ -46,7 +45,7 @@ case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[
 
 trait DbReaderImplicits{
 
-  implicit def combinedReader[T1:DbReader,T2:DbReader]:DbReader[(T1,T2)] = new DbReader[(T1,T2)] {
+  implicit def combineReader[T1:DbReader,T2:DbReader]:DbReader[(T1,T2)] = new DbReader[(T1,T2)] {
 
     private val t1 = implicitly[DbReader[T1]]
     private val t2 = implicitly[DbReader[T2]]
