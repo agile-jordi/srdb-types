@@ -1,0 +1,40 @@
+package com.agilogy.srdb.types
+
+import java.sql.ResultSet
+
+private[types] object HasLength0{
+  val length = 0
+}
+
+trait CombinedDbReader[T] extends DbReader[T]{
+
+    protected[this] val t0 = HasLength0
+}
+
+trait ReaderCombinators{
+
+  [2..22#implicit def reader[[#T1:DbReader#]]: DbReader[([#T1#])] = new CombinedDbReader[([#T1#])]{
+     [#private val t1 = implicitly[DbReader[T1]]#
+     ]
+     override val length: Int = [#t1.length# + ]
+     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
+     override def get(rs: ResultSet, name: String): ([#T1#]) = ([#t1.get(rs,name)#])
+     override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos + t0.length)#])
+   }#
+  ]
+
+  
+  implicit def reader2[T1:DbReader,T2:DbReader]:DbReader[(T1,T2)] = new DbReader[(T1,T2)] {
+
+    private val t1 = implicitly[DbReader[T1]]
+    private val t2 = implicitly[DbReader[T2]]
+
+    override val length: Int = t1.length + t2.length
+
+    override def get(rs: ResultSet, name: String): (T1, T2) = (t1.get(rs,name),t2.get(rs,name))
+
+    override def get(rs: ResultSet, pos: Int): (T1, T2) = (t1.get(rs,pos),t2.get(rs,pos + t1.length))
+
+  }
+  
+}

@@ -24,8 +24,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toByte)
-    db.read(reader[Byte])
-    db.read(reader[Byte]("c"))
+    db.read(rsReader[Byte])
+    db.read(rsReader[Byte]("c"))
   }
 
   it should "prepare statements with a Short param and read resultsets with a Short column" in {
@@ -37,8 +37,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toShort)
-    db.read(reader[Short])
-    db.read(reader[Short]("c"))
+    db.read(rsReader[Short])
+    db.read(rsReader[Short]("c"))
   }
 
   it should "execute selects with an Int param" in {
@@ -50,8 +50,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3)
-    db.read(reader[Int])
-    db.read(reader[Int]("c"))
+    db.read(rsReader[Int])
+    db.read(rsReader[Int]("c"))
   }
 
   it should "prepare statements with a Long param and read resultsets with a Long column" in {
@@ -63,8 +63,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3l)
-    db.read(reader[Long])
-    db.read(reader[Long]("c"))
+    db.read(rsReader[Long])
+    db.read(rsReader[Long]("c"))
   }
 
   it should "prepare statements with a Float param and read resultsets with a Float column" in {
@@ -74,7 +74,7 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0f)
-    db.read(reader[Float])
+    db.read(rsReader[Float])
   }
 
   it should "prepare statements with a Double param and read resultsets with a Double column" in {
@@ -86,8 +86,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0)
-    db.read(reader[Double])
-    db.read(reader[Double]("c"))
+    db.read(rsReader[Double])
+    db.read(rsReader[Double]("c"))
   }
 
   it should "prepare statements with a String param and read resultsets with a String column" in {
@@ -99,8 +99,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare("hi!")
-    db.read(reader[String])
-    db.read(reader[String]("c"))
+    db.read(rsReader[String])
+    db.read(rsReader[String]("c"))
   }
 
   it should "prepare statements with a Boolean param and read resultsets with a Boolean column" in {
@@ -112,8 +112,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(false)
-    db.read(reader[Boolean])
-    db.read(reader[Boolean]("c"))
+    db.read(rsReader[Boolean])
+    db.read(rsReader[Boolean]("c"))
   }
 
   it should "prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
@@ -127,8 +127,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(d)
-    db.read(reader[java.util.Date])
-    db.read(reader[java.util.Date]("c"))
+    db.read(rsReader[java.util.Date])
+    db.read(rsReader[java.util.Date]("c"))
   }
 
   it should "prepare statements with a BigDecimal param and read resultsets with a BigDecimal column" in {
@@ -142,8 +142,8 @@ class NotNullAtomicDbTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(value)
-    db.read(reader[BigDecimal])
-    db.read(reader[BigDecimal]("c"))
+    db.read(rsReader[BigDecimal])
+    db.read(rsReader[BigDecimal]("c"))
   }
 
 }

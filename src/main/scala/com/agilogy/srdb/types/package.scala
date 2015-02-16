@@ -25,7 +25,7 @@ package object types extends AtomicDbTypeImplicits with DbTypeImplicits with DbR
   
   def dbType[T:DbType]:DbType[T] = implicitly[DbType[T]]
 
-  def reader[T:DbReader]: ResultSet => T = rs => implicitly[DbReader[T]].get(rs,1)
+  def rsReader[T:DbReader]: ResultSet => T = rs => implicitly[DbReader[T]].get(rs,1)
 
-  def reader[T:DbReader](name:String):NamedDbReader[T] = NamedDbReader[T](implicitly[DbReader[T]],name)
+  def rsReader[T:DbReader](name:String):NamedDbReader[T] = NamedDbReader[T](implicitly[DbReader[T]],name)
 }

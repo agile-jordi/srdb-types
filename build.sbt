@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
 
 ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "<empty>"
 
+Boilerplate.settings
+
 publishMavenStyle := false
 
 // --> bintray

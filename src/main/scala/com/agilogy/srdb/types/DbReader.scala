@@ -43,21 +43,6 @@ case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[
   override def get(rs: ResultSet, pos: Int): T = dbReader.get(rs,pos)
 }
 
-trait DbReaderImplicits{
-
-  implicit def combineReader[T1:DbReader,T2:DbReader]:DbReader[(T1,T2)] = new DbReader[(T1,T2)] {
-
-    private val t1 = implicitly[DbReader[T1]]
-    private val t2 = implicitly[DbReader[T2]]
-
-    override val length: Int = t1.length + t2.length
-
-    override def get(rs: ResultSet): (T1, T2) = (t1.get(rs), t2.get(rs))
-
-    override def get(rs: ResultSet, name: String): (T1, T2) = (t1.get(rs,name),t2.get(rs,name))
-
-    override def get(rs: ResultSet, pos: Int): (T1, T2) = (t1.get(rs,pos),t2.get(rs,pos + t1.length))
-
-  }
+trait DbReaderImplicits extends ReaderCombinators{
 
 }

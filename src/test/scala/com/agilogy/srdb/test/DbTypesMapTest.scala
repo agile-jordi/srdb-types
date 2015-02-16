@@ -26,7 +26,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(Name("Jane"))
-    assert(db.read(reader[Name]) === Name("John"))
+    assert(db.read(rsReader[Name]) === Name("John"))
   }
   
   behavior of "named db types xmap"
@@ -61,13 +61,13 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(Person("Jane",25))
-    assert(db.read(reader[Person]) === Person("John",23))
+    assert(db.read(rsReader[Person]) === Person("John",23))
   }
 
   behavior of "combined named db types map"
 
   it should "create a new db type mapping over a function" in {
-    implicit val personReader = combineReader(DbString.notNull("name"),DbInt.notNull("age")).map[Person]({case ((n,a)) => Person(n,a)})
+    implicit val personReader = reader(DbString.notNull("name"),DbInt.notNull("age")).map[Person]((Person.apply _).tupled)
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
