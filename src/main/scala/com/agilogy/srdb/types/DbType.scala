@@ -24,21 +24,6 @@ trait DbType[T] extends DbReader[T] with DbWriter[T]{
 
 }
 
-trait DbTypeImplicits{
-  implicit def combinedDbType[T1:DbType,T2:DbType]:DbType[(T1,T2)] = new DbType[(T1,T2)] {
-
-    private val t1 = implicitly[DbType[T1]]
-    private val t2 = implicitly[DbType[T2]]
-
-    override def set(ps: PreparedStatement, pos: Int, value: (T1, T2)): Unit = {
-      t1.set(ps, pos, value._1)
-      t2.set(ps, pos + t1.length, value._2)
-    }
-
-    override val length: Int = t1.length + t2.length
-
-    override def get(rs: ResultSet, name: String): (T1, T2) = (t1.get(rs,name),t2.get(rs,name))
-
-    override def get(rs: ResultSet, pos: Int): (T1, T2) = (t1.get(rs,pos),t2.get(rs,pos + t1.length))
-  }
+trait DbTypeImplicits extends DbTypeCombinators{
+   
 }

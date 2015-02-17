@@ -1,0 +1,28 @@
+package com.agilogy.srdb.types
+
+import java.sql.ResultSet
+
+private[types] object HasLength0{
+  val length = 0
+}
+
+trait DummyCombinator {
+
+    protected[this] val t0 = HasLength0
+}
+
+trait DbReaderCombinators{
+
+  [2..22#implicit def reader1[[#T1:DbReader#]]: DbReader[([#T1#])] = new DbReader[([#T1#])] with DummyCombinator{
+     [#private val t1 = implicitly[DbReader[T1]]#
+     ]
+     override val length: Int = [#t1.length# + ]
+     //override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
+     override def get(rs: ResultSet, name: String): ([#T1#]) = ([#t1.get(rs,name)#])
+     override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos + [#t0.length# + ])#])
+   }
+   def reader[[#T1:DbReader#]]: DbReader[([#T1#])] = reader1[[#T1#]]
+   #
+  ]
+
+}

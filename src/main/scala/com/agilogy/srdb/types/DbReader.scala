@@ -43,6 +43,4 @@ case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[
   override def get(rs: ResultSet, pos: Int): T = dbReader.get(rs,pos)
 }
 
-trait DbReaderImplicits extends ReaderCombinators{
-
-}
+trait DbReaderImplicits extends DbReaderCombinators

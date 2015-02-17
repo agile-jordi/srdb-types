@@ -34,7 +34,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
     db.prepare(("John", 23))
   }
   
-  it should "read a ResultSet by name" in{
+  ignore should "read a ResultSet by name" in{
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
