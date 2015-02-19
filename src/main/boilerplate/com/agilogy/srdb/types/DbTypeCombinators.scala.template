@@ -2,25 +2,29 @@ package com.agilogy.srdb.types
 
 import java.sql.{PreparedStatement, ResultSet}
 
-trait CombinedDbType[T] extends DbType[T]{
-
-    protected[this] val t0 = HasLength0
-}
-
 trait DbTypeCombinators{
 
-  [2..22#implicit def dbType1[[#T1:DbType#]]: DbType[([#T1#])] = new CombinedDbType[([#T1#])]{
-     [#private val t1 = implicitly[DbType[T1]]#
-     ]
-     override val length: Int = [#t1.length# + ]
-     //override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
-     override def get(rs: ResultSet, name: String): ([#T1#]) = ([#t1.get(rs,name)#])
-     override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos + t0.length)#])
-     override def set(ps: PreparedStatement, pos: Int, value: ([#T1#])): Unit = {
-      [#t1.set(ps,pos + t0.length, value._1)#
+
+  [2..22#implicit def dbType1[[#T1:PositionalDbType#]]: PositionalDbType[([#T1#])] = new PositionalDbType[([#T1#])]{
+    [#private val t1 = implicitly[PositionalDbType[T1]]#
+    ]
+    override val length: Int = [#t1.length# + ]
+    override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
+    override def set(ps: PreparedStatement, pos: Int, value: ([#T1#])): Unit = {
+      [#t1.set(ps,pos [#+ t0.length# ], value._1)#
       ]
     }
-   }#
+  }
+  
+  def dbType[[#T1#]]([#t1:NamedDbType[T1]#]): NamedDbType[([#T1#])] = new NamedDbType[([#T1#])]{
+    override val length: Int = [#t1.length# + ]
+    override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
+    override def set(ps: PreparedStatement, pos: Int, value: ([#T1#])): Unit = {
+      [#t1.set(ps,pos [#+ t0.length# ], value._1)#
+      ]
+    }
+  }
+  #
   ]
 
 }

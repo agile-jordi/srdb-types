@@ -2,19 +2,16 @@ package com.agilogy.srdb
 
 import java.sql.{ResultSet, PreparedStatement}
 
-package object types extends AtomicDbTypeImplicits with DbTypeImplicits with DbReaderImplicits {
+package object types extends AtomicDbTypeInstances with DbReaderImplicits with DbTypeCombinators{
 
   class NullColumnReadException extends RuntimeException
 
-  def set[T:DbWriter](ps:PreparedStatement,value:T):Unit = implicitly[DbWriter[T]].set(ps,1,value)
-  def set[T:DbWriter](ps:PreparedStatement, pos:Int, value:T):Unit = implicitly[DbWriter[T]].set(ps,pos,value)
+  def set[T:DbWriter](ps:PreparedStatement,value:T):Unit = implicitly[DbWriter[T]].set(ps,value)
   def get[T:DbReader](rs:ResultSet):T = implicitly[DbReader[T]].get(rs)
-  def get[T:DbReader](rs:ResultSet, pos:Int):T = implicitly[DbReader[T]].get(rs,pos)
-  def get[T:DbReader](rs:ResultSet, name:String):T = implicitly[DbReader[T]].get(rs,name)
 
   type ArgumentsSetter = PreparedStatement => Unit
   type ResultSetReader[T] = ResultSet => T
-  
+
   implicit class DbWriterArgumentsSetter[T:DbWriter](value:T) extends ArgumentsSetter {
     override def apply(ps: PreparedStatement): Unit = set(ps,value)
   }
@@ -23,9 +20,16 @@ package object types extends AtomicDbTypeImplicits with DbTypeImplicits with DbR
     override def apply(rs: ResultSet): T = get(rs)(dbReader)
   }
   
-  def dbType[T:DbType]:DbType[T] = implicitly[DbType[T]]
+  implicit def atomicDbType[T:ColumnType]:PositionalDbType[T] = new PositionalDbType[T] {
 
-  def rsReader[T:DbReader]: ResultSet => T = rs => implicitly[DbReader[T]].get(rs)
+    override def get(rs: ResultSet, pos: Int): T = implicitly[ColumnType[T]].get(rs,pos)
 
-  def rsReader[T:DbReader](name:String):NamedDbReader[T] = NamedDbReader[T](implicitly[DbReader[T]],name)
+    override def set(ps: PreparedStatement, pos:Int, value: T): Unit = implicitly[ColumnType[T]].set(ps,pos,value)
+
+    override val length: Int = 1
+  }
+
+  def rsReader[T:PositionalDbReader]: ResultSet => T = rs => implicitly[PositionalDbReader[T]].get(rs)
+
+  def rsReader[T:ColumnType](name:String):NamedDbReader[T] = implicitly[ColumnType[T]].apply(name)
 }

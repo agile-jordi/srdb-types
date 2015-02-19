@@ -32,8 +32,8 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "named db types xmap"
 
   it should "create a new db type mapping over a function" in {
-    implicit val nameDbType: DbType[Name] = notNull[String].xmap[Name](Name.apply,_.v)
-    implicit val nameReader = nameDbType.as("name")
+    implicit val nameDbType: ColumnType[Name] = notNull[String].xmap[Name](Name.apply,_.v)
+    implicit val nameReader = nameDbType("name")
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:String)).expects("name").returning("John")
@@ -48,25 +48,23 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   case class Person(name:String, age:Int)
   
 
+//  it should "create a new db type mapping over a function" in {
+//    implicit val personDbType = dbType[(String,Int)].xmap[Person](Person.tupled,Person.unapply(_).get)
+//    inSequence{
+//      (ps.setString _).expects(1,"Jane")
+//      (ps.setInt _).expects(2,25)
+//      (rs.getString(_:Int)).expects(1).returning("John")
+//      (rs.wasNull _).expects().returning(false)
+//      (rs.getInt(_:Int)).expects(2).returning(23)
+//      (rs.wasNull _).expects().returning(false)
+//    }
+//    db.prepare(Person("Jane",25))
+//    assert(db.read(rsReader[Person]) === Person("John",23))
+//  }
+
+  behavior of "combined named db readers map"
+
   it should "create a new db type mapping over a function" in {
-//    def caseClassReader[I:DbType,O](s:{def tupled(i:I):O}):DbReader[O] = implicitly[DbType[I]].map(s.tupled)
-//    implicit val personReader:DbReader[Person] = caseClassReader[(String,Int),Person](Person)
-    implicit val personDbType = dbType[(String,Int)].xmap[Person](Person.tupled,Person.unapply(_).get)
-    inSequence{
-      (ps.setString _).expects(1,"Jane")
-      (ps.setInt _).expects(2,25)
-      (rs.getString(_:Int)).expects(1).returning("John")
-      (rs.wasNull _).expects().returning(false)
-      (rs.getInt(_:Int)).expects(2).returning(23)
-      (rs.wasNull _).expects().returning(false)
-    }
-    db.prepare(Person("Jane",25))
-    assert(db.read(rsReader[Person]) === Person("John",23))
-  }
-
-  behavior of "combined named db types map"
-
-  ignore should "create a new db type mapping over a function" in {
     implicit val personReader = reader(DbString.notNull("name"),DbInt.notNull("age")).map[Person]((Person.apply _).tupled)
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
@@ -77,6 +75,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
     assert(db.read(personReader) === Person("John",23))
   }
 
+  behavior of "combined positional db readers"
 
   def read[T:DbReader,T2](rs:ResultSet, f:T => T2):T2 = implicitly[DbReader[T]].map(f).get(rs)
 

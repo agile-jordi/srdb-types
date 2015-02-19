@@ -6,13 +6,15 @@ trait DbWriter[T] {
 
   self =>
 
-  def set(ps: PreparedStatement, pos: Int, value: T): Unit
-
   val length: Int
 
-  def contramap[T2](xf:T2 => T): DbWriter[T2] = new DbWriter[T2] {
+  def set(ps: PreparedStatement, value: T): Unit = set(ps,1,value)
 
-    override def set(ps: PreparedStatement, pos: Int, value: T2): Unit = self.set(ps,pos,xf(value))
+  def set(ps: PreparedStatement, pos:Int, value: T): Unit
+
+  def contramap[T2](xf: (T2) => T): DbWriter[T2] = new DbWriter[T2] {
+
+    override def set(ps: PreparedStatement, pos:Int, value: T2): Unit = self.set(ps,pos,xf(value))
 
     override val length: Int = self.length
   }

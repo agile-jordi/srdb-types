@@ -7,40 +7,43 @@ trait DbReader[T] {
 
   self =>
 
-  def as(name:String) = NamedDbReader(this,name)
-
-  val length: Int
-
-  def get(rs: ResultSet): T = get(rs,1)
-
-  def get(rs: ResultSet, pos: Int): T
-
-  def get(rs: ResultSet, name: String): T
-
+  def get(rs: ResultSet): T
+  
   def map[T2](f: T => T2): DbReader[T2] = new DbReader[T2] {
-
-    override val length: Int = self.length
-
     override def get(rs: ResultSet): T2 = f(self.get(rs))
-
-    override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs, pos))
-
-    override def get(rs: ResultSet, name: String): T2 = f(self.get(rs, name))
-
   }
 
 }
 
+trait PositionalDbReader[T] extends DbReader[T]{
+  
+  self =>
 
-case class NamedDbReader[T](dbReader: DbReader[T], as: String) extends DbReader[T] {
+  val length: Int
 
-  override val length: Int = dbReader.length
+  def get(rs: ResultSet): T = get(rs,1)
+  def get(rs: ResultSet, pos:Int): T
 
-  override def get(rs: ResultSet): T = get(rs, "")
+  override def map[T2](f: (T) => T2): PositionalDbReader[T2] = new PositionalDbReader[T2] {
+    
+    override val length: Int = self.length
 
-  def get(rs: ResultSet, name: String): T = dbReader.get(rs, as + name)
+    override def get(rs: ResultSet): T2 = f(self.get(rs))
+    override def get(rs: ResultSet, pos:Int): T2 = f(self.get(rs,pos))
+  }
+}
 
-  override def get(rs: ResultSet, pos: Int): T = dbReader.get(rs,pos)
+trait NamedDbReader[T] extends DbReader[T] {
+  
+  self =>
+
+  override def get(rs: ResultSet): T
+
+  override def map[T2](f: (T) => T2): NamedDbReader[T2] = new NamedDbReader[T2] {
+
+    override def get(rs: ResultSet): T2 = f(self.get(rs))
+
+  }
 }
 
 trait DbReaderImplicits extends DbReaderCombinators

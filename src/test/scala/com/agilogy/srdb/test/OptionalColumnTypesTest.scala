@@ -4,7 +4,7 @@ import java.sql._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class OptionalAtomicDbTypesTest extends FlatSpec with MockFactory {
+class OptionalColumnTypesTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
