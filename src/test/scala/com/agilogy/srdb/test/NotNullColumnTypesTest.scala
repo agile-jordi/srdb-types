@@ -10,11 +10,10 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
   val rs = mock[ResultSet]
   val db = new DummyDb(ps, rs)
 
-  behavior of "not null DbType implicit conversion"
-
   import com.agilogy.srdb.types._
 
-
+  behavior of "not null ColumnType implicit conversions"
+  
   it should "prepare statements with a Byte param and read resultsets with a Byte column" in {
     inSequence {
       (ps.setByte(_, _)).expects(1, 3.toByte)
@@ -24,8 +23,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toByte)
-    db.read(rsReader[Byte])
-    db.read(rsReader[Byte]("c"))
+    db.read(notNull[Byte])
+    db.read(notNull[Byte]("c"))
   }
 
   it should "prepare statements with a Short param and read resultsets with a Short column" in {
@@ -37,8 +36,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toShort)
-    db.read(rsReader[Short])
-    db.read(rsReader[Short]("c"))
+    db.read(notNull[Short])
+    db.read(notNull[Short]("c"))
   }
 
   it should "execute selects with an Int param" in {
@@ -50,8 +49,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3)
-    db.read(rsReader[Int])
-    db.read(rsReader[Int]("c"))
+    db.read(notNull[Int])
+    db.read(notNull[Int]("c"))
   }
 
   it should "prepare statements with a Long param and read resultsets with a Long column" in {
@@ -63,8 +62,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3l)
-    db.read(rsReader[Long])
-    db.read(rsReader[Long]("c"))
+    db.read(notNull[Long])
+    db.read(notNull[Long]("c"))
   }
 
   it should "prepare statements with a Float param and read resultsets with a Float column" in {
@@ -74,7 +73,7 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0f)
-    db.read(rsReader[Float])
+    db.read(notNull[Float])
   }
 
   it should "prepare statements with a Double param and read resultsets with a Double column" in {
@@ -86,8 +85,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0)
-    db.read(rsReader[Double])
-    db.read(rsReader[Double]("c"))
+    db.read(notNull[Double])
+    db.read(notNull[Double]("c"))
   }
 
   it should "prepare statements with a String param and read resultsets with a String column" in {
@@ -99,8 +98,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare("hi!")
-    db.read(rsReader[String])
-    db.read(rsReader[String]("c"))
+    db.read(notNull[String])
+    db.read(notNull[String]("c"))
   }
 
   it should "prepare statements with a Boolean param and read resultsets with a Boolean column" in {
@@ -112,8 +111,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(false)
-    db.read(rsReader[Boolean])
-    db.read(rsReader[Boolean]("c"))
+    db.read(notNull[Boolean])
+    db.read(notNull[Boolean]("c"))
   }
 
   it should "prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
@@ -127,8 +126,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(d)
-    db.read(rsReader[java.util.Date])
-    db.read(rsReader[java.util.Date]("c"))
+    db.read(notNull[java.util.Date])
+    db.read(notNull[java.util.Date]("c"))
   }
 
   it should "prepare statements with a BigDecimal param and read resultsets with a BigDecimal column" in {
@@ -142,8 +141,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(value)
-    db.read(rsReader[BigDecimal])
-    db.read(rsReader[BigDecimal]("c"))
+    db.read(notNull[BigDecimal])
+    db.read(notNull[BigDecimal]("c"))
   }
 
 }

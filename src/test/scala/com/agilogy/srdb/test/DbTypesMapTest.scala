@@ -19,34 +19,32 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   case class Name(v:String)
   
   it should "create a new db type mapping over a function" in {
-    implicit val nameDbType = notNull[String].xmap[Name](Name.apply,_.v)
+    implicit val nameColumnType: OptionalColumnType[Name] = optional[String].xmap[Name](Name.apply,_.v)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:Int)).expects(1).returning("John")
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(Name("Jane"))
-    assert(db.read(rsReader[Name]) === Name("John"))
+    assert(db.read(notNull[Name]) === Name("John"))
   }
   
   behavior of "named db types xmap"
 
   it should "create a new db type mapping over a function" in {
-    implicit val nameDbType: ColumnType[Name] = notNull[String].xmap[Name](Name.apply,_.v)
-    implicit val nameReader = nameDbType("name")
+    implicit val nameColumnType: OptionalColumnType[Name] = optional[String].xmap[Name](Name.apply,_.v)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(Name("Jane"))
-    assert(db.read(nameReader) === Name("John"))
+    assert(db.read(notNull[Name]("name")) === Name("John"))
   }
   
-  behavior of "combined db types xmap"
+//  behavior of "combined db types xmap"
   
   case class Person(name:String, age:Int)
-  
 
 //  it should "create a new db type mapping over a function" in {
 //    implicit val personDbType = dbType[(String,Int)].xmap[Person](Person.tupled,Person.unapply(_).get)
@@ -64,8 +62,8 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
 
   behavior of "combined named db readers map"
 
-  it should "create a new db type mapping over a function" in {
-    implicit val personReader = reader(DbString.notNull("name"),DbInt.notNull("age")).map[Person]((Person.apply _).tupled)
+  it should "create a new reader mapping over a function" in {
+    implicit val personReader = reader(notNull[String]("name"),DbInt.notNull("age")).map[Person]((Person.apply _).tupled)
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)

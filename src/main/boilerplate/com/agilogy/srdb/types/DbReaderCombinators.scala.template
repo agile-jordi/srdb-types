@@ -13,9 +13,7 @@ trait DummyCombinator {
 
 trait DbReaderCombinators{
 
-  [2..22#def reader[[#T1:NamedDbReader#]]: NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])] with DummyCombinator{
-     [#private val t1 = implicitly[NamedDbReader[T1]]#
-     ]
+  [2..22#def reader[[#T1#]]([#t1: NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])] with DummyCombinator{
      override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
   }
   
@@ -25,6 +23,8 @@ trait DbReaderCombinators{
     val length = t0.length [#+ t1.length# ]
     override def get(rs: ResultSet, pos:Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
   }
+  
+  def reader[[#T1:PositionalDbReader#]] = reader1[[#T1#]]
   #
   ]
 

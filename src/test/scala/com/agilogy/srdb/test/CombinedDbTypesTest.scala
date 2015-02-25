@@ -12,7 +12,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
   val rs = mock[ResultSet]
   val db = new DummyDb(ps, rs)
 
-  behavior of "cobined positional db type"
+  behavior of "combined positional db type"
   
   import types._
   
@@ -23,7 +23,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
       (rs.getInt(_:Int)).expects(2).returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(rsReader[(String,Int)]) === ("John",23))
+    assert(db.read(reader[String,Int]) === ("John",23))
   }
   
   it should "set PreparedStatement parameters" in {
@@ -33,7 +33,9 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
     }
     db.prepare(("John", 23))
   }
-  
+
+  behavior of "combined named db type"
+
   it should "read a ResultSet by name" in{
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
@@ -41,7 +43,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
       (rs.getInt(_:String)).expects("age").returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(reader(DbString.notNull("name"), DbInt.notNull("age"))) === ("John",23))
+    assert(db.read(reader(notNull[String]("name"), DbInt.notNull("age"))) === ("John",23))
   }
 
 }

@@ -38,7 +38,7 @@ class OptionalColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(true)
     }
     db.prepare(3)
-    assert(db.read(rsReader[Option[Int]]) === None)
+    assert(db.read(optional[Int]) === None)
   }
 
 
@@ -49,6 +49,6 @@ class OptionalColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3)
-    assert(db.read(rsReader[Option[Int]]) === Some(3))
+    assert(db.read(optional[Int]) === Some(3))
   }
 }

@@ -17,6 +17,11 @@ sealed trait ColumnType[T] {
 
 }
 
+object ColumnType{
+
+  def apply[T:ColumnType](name:String):NamedDbReader[T] = implicitly[ColumnType[T]].apply(name)
+}
+
 case class NotNullColumnType[T](optional: OptionalColumnType[T]) extends ColumnType[T] {
 
   override def set(ps: PreparedStatement, pos: Int, value: T): Unit = {
@@ -96,11 +101,13 @@ object OptionalColumnType {
 }
 
 
-trait AtomicDbTypeInstances {
+trait ColumnTypeInstances {
 
   implicit def notNull[T: OptionalColumnType]: NotNullColumnType[T] = new NotNullColumnType[T](optional[T])
+  def notNull[T: OptionalColumnType](name:String): NamedDbReader[T] = new NotNullColumnType[T](optional[T]).apply(name)
 
   def optional[T: OptionalColumnType]: OptionalColumnType[T] = implicitly[OptionalColumnType[T]]
+  def optional[T: OptionalColumnType](name:String): NamedDbReader[Option[T]] = implicitly[OptionalColumnType[T]].apply(name)
 
   implicit val DbByte = OptionalColumnType[Byte](_.setByte(_, _), _.getByte(_: Int), _.getByte(_: String), JdbcType.TinyInt)
   implicit val DbShort = OptionalColumnType[Short](_.setShort(_, _), _.getShort(_: Int), _.getShort(_: String), JdbcType.SmallInt)

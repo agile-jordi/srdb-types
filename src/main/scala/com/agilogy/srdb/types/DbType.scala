@@ -6,7 +6,6 @@ trait DbType[T] extends DbReader[T] with DbWriter[T]{
 
 trait NamedDbType[T] extends NamedDbReader[T] with DbType[T]
 
-trait PositionalDbType[T] extends PositionalDbReader[T] with DbType[T] {
-}
+trait PositionalDbType[T] extends PositionalDbReader[T] with DbType[T]
 
 
