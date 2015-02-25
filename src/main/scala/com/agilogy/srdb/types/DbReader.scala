@@ -2,7 +2,6 @@ package com.agilogy.srdb.types
 
 import java.sql.ResultSet
 
-
 trait DbReader[T] {
 
   self =>

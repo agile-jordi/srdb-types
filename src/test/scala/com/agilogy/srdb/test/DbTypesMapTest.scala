@@ -19,7 +19,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   case class Name(v:String)
   
   it should "create a new db type mapping over a function" in {
-    implicit val nameColumnType: OptionalColumnType[Name] = optional[String].xmap[Name](Name.apply,_.v)
+    implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply,_.v)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:Int)).expects(1).returning("John")
@@ -32,7 +32,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "named db types xmap"
 
   it should "create a new db type mapping over a function" in {
-    implicit val nameColumnType: OptionalColumnType[Name] = optional[String].xmap[Name](Name.apply,_.v)
+    implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply,_.v)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:String)).expects("name").returning("John")
@@ -63,7 +63,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   behavior of "combined named db readers map"
 
   it should "create a new reader mapping over a function" in {
-    implicit val personReader = reader(notNull[String]("name"),DbInt.notNull("age")).map[Person]((Person.apply _).tupled)
+    implicit val personReader = reader(notNull[String]("name"),notNull[Int]("age")).map[Person]((Person.apply _).tupled)
     inSequence{
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)

@@ -5,41 +5,6 @@ import java.sql.{ResultSet, PreparedStatement}
 sealed trait ColumnType[T] {
   self =>
 
-  def get(rs: ResultSet, name: String): T
-
-  def get(rs: ResultSet, pos: Int): T
-
-  def set(ps: PreparedStatement, pos: Int, value: T): Unit
-
-  def apply(name: String): NamedDbReader[T] = new NamedDbReader[T] {
-    override def get(rs: ResultSet): T = self.get(rs,name)
-  }
-
-}
-
-object ColumnType{
-
-  def apply[T:ColumnType](name:String):NamedDbReader[T] = implicitly[ColumnType[T]].apply(name)
-}
-
-case class NotNullColumnType[T](optional: OptionalColumnType[T]) extends ColumnType[T] {
-
-  override def set(ps: PreparedStatement, pos: Int, value: T): Unit = {
-    if (value == null) throw new IllegalArgumentException("Can't set null")
-    optional.unsafeSet(ps, pos, value)
-  }
-
-  override def get(rs: ResultSet, pos: Int): T = optional.get(rs, pos).getOrElse(throw new NullColumnReadException())
-
-  override def get(rs: ResultSet, name: String): T = optional.get(rs, name).getOrElse(throw new NullColumnReadException())
-
-  def xmap[T2](f: (T) => T2, xf: (T2) => T): NotNullColumnType[T2] = this.copy(optional.xmap(f, xf))
-}
-
-trait OptionalColumnType[T] extends ColumnType[Option[T]] {
-
-  self =>
-
   protected[types] def unsafeSet(ps: PreparedStatement, pos: Int, value: T): Unit
 
   protected[types] def unsafeGet(rs: ResultSet, pos: Int): T
@@ -65,9 +30,7 @@ trait OptionalColumnType[T] extends ColumnType[Option[T]] {
     }
   }
 
-  def notNull: NotNullColumnType[T] = NotNullColumnType(this)
-
-  def xmap[T2](f: T => T2, xf: T2 => T): OptionalColumnType[T2] = new OptionalColumnType[T2] {
+  def xmap[T2](f: T => T2, xf: T2 => T): ColumnType[T2] = new ColumnType[T2] {
 
     override def unsafeSet(ps: PreparedStatement, pos: Int, value: T2): Unit = self.unsafeSet(ps, pos, xf(value))
 
@@ -78,14 +41,18 @@ trait OptionalColumnType[T] extends ColumnType[Option[T]] {
     override val jdbcTypes: Seq[JdbcType] = self.jdbcTypes
 
   }
+  
 }
 
-object OptionalColumnType {
-  private[types] def apply[T](
+object ColumnType{
+  
+  def apply[T:ColumnType]: ColumnType[T] = implicitly[ColumnType[T]]
+
+  private[types] def from[T](
                                uset: (PreparedStatement, Int, T) => Unit,
                                ugetp: (ResultSet, Int) => T,
                                ugetn: (ResultSet, String) => T,
-                               inJdbcTypes: JdbcType*): OptionalColumnType[T] = new OptionalColumnType[T] {
+                               inJdbcTypes: JdbcType*): ColumnType[T] = new ColumnType[T] {
 
     require(inJdbcTypes.nonEmpty)
 
@@ -103,32 +70,26 @@ object OptionalColumnType {
 
 trait ColumnTypeInstances {
 
-  implicit def notNull[T: OptionalColumnType]: NotNullColumnType[T] = new NotNullColumnType[T](optional[T])
-  def notNull[T: OptionalColumnType](name:String): NamedDbReader[T] = new NotNullColumnType[T](optional[T]).apply(name)
+  implicit val DbByte: ColumnType[Byte] = ColumnType.from[Byte](_.setByte(_, _), _.getByte(_: Int), _.getByte(_: String), JdbcType.TinyInt)
+  implicit val DbShort = ColumnType.from[Short](_.setShort(_, _), _.getShort(_: Int), _.getShort(_: String), JdbcType.SmallInt)
+  implicit val DbInt = ColumnType.from[Int](_.setInt(_, _), _.getInt(_: Int), _.getInt(_: String), JdbcType.Integer)
+  implicit val DbLong = ColumnType.from[Long](_.setLong(_, _), _.getLong(_: Int), _.getLong(_: String), JdbcType.BigInt)
 
-  def optional[T: OptionalColumnType]: OptionalColumnType[T] = implicitly[OptionalColumnType[T]]
-  def optional[T: OptionalColumnType](name:String): NamedDbReader[Option[T]] = implicitly[OptionalColumnType[T]].apply(name)
+  implicit val DbFloat = ColumnType.from[Float](_.setFloat(_, _), _.getFloat(_: Int), _.getFloat(_: String), JdbcType.BigInt)
+  implicit val DbDouble = ColumnType.from[Double](_.setDouble(_, _), _.getDouble(_: Int), _.getDouble(_: String), JdbcType.BigInt)
 
-  implicit val DbByte = OptionalColumnType[Byte](_.setByte(_, _), _.getByte(_: Int), _.getByte(_: String), JdbcType.TinyInt)
-  implicit val DbShort = OptionalColumnType[Short](_.setShort(_, _), _.getShort(_: Int), _.getShort(_: String), JdbcType.SmallInt)
-  implicit val DbInt = OptionalColumnType[Int](_.setInt(_, _), _.getInt(_: Int), _.getInt(_: String), JdbcType.Integer)
-  implicit val DbLong = OptionalColumnType[Long](_.setLong(_, _), _.getLong(_: Int), _.getLong(_: String), JdbcType.BigInt)
+  implicit val DbString = ColumnType.from[String](_.setString(_, _), _.getString(_: Int), _.getString(_: String), JdbcType.Varchar, JdbcType.Char, JdbcType.LongVarchar)
 
-  implicit val DbFloat = OptionalColumnType[Float](_.setFloat(_, _), _.getFloat(_: Int), _.getFloat(_: String), JdbcType.BigInt)
-  implicit val DbDouble = OptionalColumnType[Double](_.setDouble(_, _), _.getDouble(_: Int), _.getDouble(_: String), JdbcType.BigInt)
-
-  implicit val DbString = OptionalColumnType[String](_.setString(_, _), _.getString(_: Int), _.getString(_: String), JdbcType.Varchar, JdbcType.Char, JdbcType.LongVarchar)
-
-  implicit val DbBoolean = OptionalColumnType[Boolean](_.setBoolean(_, _), _.getBoolean(_: Int), _.getBoolean(_: String), JdbcType.Boolean)
+  implicit val DbBoolean = ColumnType.from[Boolean](_.setBoolean(_, _), _.getBoolean(_: Int), _.getBoolean(_: String), JdbcType.Boolean)
 
   private def toSqlDate(d: java.util.Date) = new java.sql.Date(d.getTime)
 
-  implicit val DbDate = OptionalColumnType[java.util.Date](
+  implicit val DbDate = ColumnType.from[java.util.Date](
     (ps, pos, v) => ps.setDate(pos, toSqlDate(v)),
     _.getDate(_: Int),
     _.getDate(_: String), JdbcType.Date)
 
-  implicit val DbBigDecimal = OptionalColumnType[BigDecimal](
+  implicit val DbBigDecimal = ColumnType.from[BigDecimal](
     (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal),
     _.getBigDecimal(_: Int),
     _.getBigDecimal(_: String), JdbcType.BigDecimal)

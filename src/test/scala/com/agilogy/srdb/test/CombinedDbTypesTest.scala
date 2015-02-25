@@ -43,7 +43,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
       (rs.getInt(_:String)).expects("age").returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(reader(notNull[String]("name"), DbInt.notNull("age"))) === ("John",23))
+    assert(db.read(reader(notNull[String]("name"), notNull[Int]("age"))) === ("John",23))
   }
 
 }
