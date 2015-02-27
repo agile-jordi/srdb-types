@@ -19,7 +19,10 @@ object JdbcType{
   case object Date extends JdbcType(Types.DATE)
   case object Timestamp extends JdbcType(Types.TIMESTAMP)
 
-  case object BigDecimal extends JdbcType(Types.NUMERIC)
+  case object Numeric extends JdbcType(Types.NUMERIC)
+  case object Decimal extends JdbcType(Types.DECIMAL)
+  case object Float extends JdbcType(Types.FLOAT)
+  case object Double extends JdbcType(Types.DOUBLE)
 
 }
 

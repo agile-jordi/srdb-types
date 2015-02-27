@@ -75,8 +75,8 @@ trait ColumnTypeInstances {
   implicit val DbInt = ColumnType.from[Int](_.setInt(_, _), _.getInt(_: Int), _.getInt(_: String), JdbcType.Integer)
   implicit val DbLong = ColumnType.from[Long](_.setLong(_, _), _.getLong(_: Int), _.getLong(_: String), JdbcType.BigInt)
 
-  implicit val DbFloat = ColumnType.from[Float](_.setFloat(_, _), _.getFloat(_: Int), _.getFloat(_: String), JdbcType.BigInt)
-  implicit val DbDouble = ColumnType.from[Double](_.setDouble(_, _), _.getDouble(_: Int), _.getDouble(_: String), JdbcType.BigInt)
+  implicit val DbFloat = ColumnType.from[Float](_.setFloat(_, _), _.getFloat(_: Int), _.getFloat(_: String), JdbcType.Float)
+  implicit val DbDouble = ColumnType.from[Double](_.setDouble(_, _), _.getDouble(_: Int), _.getDouble(_: String), JdbcType.Double)
 
   implicit val DbString = ColumnType.from[String](_.setString(_, _), _.getString(_: Int), _.getString(_: String), JdbcType.Varchar, JdbcType.Char, JdbcType.LongVarchar)
 
@@ -92,7 +92,7 @@ trait ColumnTypeInstances {
   implicit val DbBigDecimal = ColumnType.from[BigDecimal](
     (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal),
     _.getBigDecimal(_: Int),
-    _.getBigDecimal(_: String), JdbcType.BigDecimal)
+    _.getBigDecimal(_: String), JdbcType.Numeric)
 
 }
 
