@@ -44,3 +44,13 @@ trait NamedDbReader[T] extends DbReader[T] {
 
   }
 }
+
+case class NotNullAtomicNamedDbReader[T:ColumnType](name:String) extends NamedDbReader[T] {
+
+  override def get(rs: ResultSet): T = implicitly[ColumnType[T]].get(rs,name).getOrElse(throw new NullColumnReadException)
+}
+
+case class OptionalAtomicNamedReader[T:ColumnType](name:String) extends NamedDbReader[Option[T]]{
+
+  override def get(rs: ResultSet): Option[T] = implicitly[ColumnType[T]].get(rs,name)
+}

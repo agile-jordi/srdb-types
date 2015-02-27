@@ -147,5 +147,16 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
     assert(db.read(notNull[BigDecimal]) === value)
     assert(db.read(notNull[BigDecimal]("c")) === value)
   }
+  
+  it should "throw if it reads a null value" in{
+    inSequence {
+      (rs.getString(_: Int)).expects(1).returning(null)
+      (rs.wasNull _).expects().returning(true)
+      (rs.getString(_: String)).expects("c").returning(null)
+      (rs.wasNull _).expects().returning(true)
+    }
+    intercept[NullColumnReadException](db.read(notNull[String]))
+    intercept[NullColumnReadException](db.read(notNull[String]("c")))
+  }
 
 }

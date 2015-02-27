@@ -18,13 +18,8 @@ trait DbTypeCombinators{
   
   def dbType[[#T1:PositionalDbType#]]: PositionalDbType[([#T1#])] = dbType1[[#T1#]]
   
-  def dbType[[#T1#]]([#t1:NamedDbType[T1]#]): NamedDbType[([#T1#])] = new NamedDbType[([#T1#])]{
-    override val length: Int = [#t1.length# + ]
+  def dbType[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
-    override def set(ps: PreparedStatement, pos: Int, value: ([#T1#])): Unit = {
-      [#t1.set(ps,pos [#+ t0.length# ], value._1)#
-      ]
-    }
   }
   #
   ]
