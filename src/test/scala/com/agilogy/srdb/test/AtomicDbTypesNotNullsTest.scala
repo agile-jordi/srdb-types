@@ -4,7 +4,7 @@ import java.sql._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class NotNullColumnTypesTest extends FlatSpec with MockFactory {
+class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
@@ -23,8 +23,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toByte)
-    db.read(notNull[Byte])
-    db.read(notNull[Byte]("c"))
+    assert(db.read(notNull[Byte]) === 3.toByte)
+    assert(db.read(notNull[Byte]("c")) === 3.toByte)
   }
 
   it should "prepare statements with a Short param and read resultsets with a Short column" in {
@@ -32,12 +32,12 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (ps.setShort(_, _)).expects(1, 3.toShort)
       (rs.getShort(_: Int)).expects(1).returning(3.toShort)
       (rs.wasNull _).expects().returning(false)
-      (rs.getShort(_: String)).expects("c").returning(3.toByte)
+      (rs.getShort(_: String)).expects("c").returning(3.toShort)
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.toShort)
-    db.read(notNull[Short])
-    db.read(notNull[Short]("c"))
+    assert(db.read(notNull[Short]) === 3.toShort)
+    assert(db.read(notNull[Short]("c")) === 3.toShort)
   }
 
   it should "execute selects with an Int param" in {
@@ -49,8 +49,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3)
-    db.read(notNull[Int])
-    db.read(notNull[Int]("c"))
+    assert(db.read(notNull[Int]) === 3)
+    assert(db.read(notNull[Int]("c")) === 3)
   }
 
   it should "prepare statements with a Long param and read resultsets with a Long column" in {
@@ -62,8 +62,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3l)
-    db.read(notNull[Long])
-    db.read(notNull[Long]("c"))
+    assert(db.read(notNull[Long]) === 3l)
+    assert(db.read(notNull[Long]("c")) === 3l)
   }
 
   it should "prepare statements with a Float param and read resultsets with a Float column" in {
@@ -71,9 +71,12 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (ps.setFloat _).expects(1, 3.0f)
       (rs.getFloat(_: Int)).expects(1).returning(3.0f)
       (rs.wasNull _).expects().returning(false)
+      (rs.getFloat(_: String)).expects("c").returning(3.0f)
+      (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0f)
-    db.read(notNull[Float])
+    assert(db.read(notNull[Float]) === 3.0f)
+    assert(db.read(notNull[Float]("c")) === 3.0f)
   }
 
   it should "prepare statements with a Double param and read resultsets with a Double column" in {
@@ -85,8 +88,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3.0)
-    db.read(notNull[Double])
-    db.read(notNull[Double]("c"))
+    assert(db.read(notNull[Double]) === 3.0)
+    assert(db.read(notNull[Double]("c")) === 3.0)
   }
 
   it should "prepare statements with a String param and read resultsets with a String column" in {
@@ -98,8 +101,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare("hi!")
-    db.read(notNull[String])
-    db.read(notNull[String]("c"))
+    assert(db.read(notNull[String]) === "hi!")
+    assert(db.read(notNull[String]("c")) === "hi!")
   }
 
   it should "prepare statements with a Boolean param and read resultsets with a Boolean column" in {
@@ -111,8 +114,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(false)
-    db.read(notNull[Boolean])
-    db.read(notNull[Boolean]("c"))
+    assert(db.read(notNull[Boolean]) === false)
+    assert(db.read(notNull[Boolean]("c")) === false)
   }
 
   it should "prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
@@ -126,8 +129,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(d)
-    db.read(notNull[java.util.Date])
-    db.read(notNull[java.util.Date]("c"))
+    assert(db.read(notNull[java.util.Date]) === d)
+    assert(db.read(notNull[java.util.Date]("c")) === d)
   }
 
   it should "prepare statements with a BigDecimal param and read resultsets with a BigDecimal column" in {
@@ -141,8 +144,8 @@ class NotNullColumnTypesTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     db.prepare(value)
-    db.read(notNull[BigDecimal])
-    db.read(notNull[BigDecimal]("c"))
+    assert(db.read(notNull[BigDecimal]) === value)
+    assert(db.read(notNull[BigDecimal]("c")) === value)
   }
 
 }

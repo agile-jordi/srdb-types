@@ -4,7 +4,7 @@ import java.sql._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
-class OptionalColumnTypesTest extends FlatSpec with MockFactory {
+class AtomicDbTypesOptionalsTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
@@ -36,9 +36,12 @@ class OptionalColumnTypesTest extends FlatSpec with MockFactory {
       (ps.setInt(_, _)).expects(1, 3)
       (rs.getInt(_: Int)).expects(1).returning(0)
       (rs.wasNull _).expects().returning(true)
+      (rs.getInt(_: String)).expects("c").returning(0)
+      (rs.wasNull _).expects().returning(true)
     }
     db.prepare(3)
     assert(db.read(optional[Int]) === None)
+    assert(db.read(optional[Int]("c")) === None)
   }
 
 
@@ -47,8 +50,11 @@ class OptionalColumnTypesTest extends FlatSpec with MockFactory {
       (ps.setInt(_, _)).expects(1, 3)
       (rs.getInt(_: Int)).expects(1).returning(3)
       (rs.wasNull _).expects().returning(false)
+      (rs.getInt(_: String)).expects("c").returning(3)
+      (rs.wasNull _).expects().returning(false)
     }
     db.prepare(3)
     assert(db.read(optional[Int]) === Some(3))
+    assert(db.read(optional[Int]("c")) === Some(3))
   }
 }
