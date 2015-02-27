@@ -20,7 +20,6 @@ case class NotNullAtomicDbType[T](implicit columnType:ColumnType[T]) extends Pos
 
   override def set(ps: PreparedStatement, pos: Int, value: T): Unit = columnType.set(ps,pos,Some(value))
 
-  def apply(name:String): NotNullAtomicNamedDbReader[T] = NotNullAtomicNamedDbReader(name)
 }
 
 case class OptionalAtomicDbType[T](implicit columnType: ColumnType[T]) extends PositionalDbType[Option[T]]{
@@ -31,7 +30,6 @@ case class OptionalAtomicDbType[T](implicit columnType: ColumnType[T]) extends P
 
   override def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = columnType.set(ps,pos, value)
 
-  def apply(name:String): OptionalAtomicNamedReader[T] = OptionalAtomicNamedReader(name)
 }
 
 
