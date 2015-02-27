@@ -8,9 +8,7 @@ trait DbReader[T] {
 
   def get(rs: ResultSet): T
   
-  def map[T2](f: T => T2): DbReader[T2] = new DbReader[T2] {
-    override def get(rs: ResultSet): T2 = f(self.get(rs))
-  }
+  def map[T2](f: T => T2): DbReader[T2]
 
 }
 
