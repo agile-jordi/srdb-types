@@ -5,8 +5,8 @@ import java.sql.{PreparedStatement, ResultSet}
 trait DbTypeCombinators{
 
 
-  [2..22#implicit def dbType1[[#T1:PositionalDbType#]]: PositionalDbType[([#T1#])] = new PositionalDbType[([#T1#])]{
-    [#private val t1 = implicitly[PositionalDbType[T1]]#
+  [2..22#implicit def dbType1[[#T1:DbType#]]: DbType[([#T1#])] = new DbType[([#T1#])]{
+    [#private val t1 = implicitly[DbType[T1]]#
     ]
     override val length: Int = [#t1.length# + ]
     override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
@@ -16,7 +16,7 @@ trait DbTypeCombinators{
     }
   }
   
-  def dbType[[#T1:PositionalDbType#]]: PositionalDbType[([#T1#])] = dbType1[[#T1#]]
+  def dbType[[#T1:DbType#]]: DbType[([#T1#])] = dbType1[[#T1#]]
   
   def dbType[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
