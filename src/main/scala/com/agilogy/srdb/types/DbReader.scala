@@ -44,5 +44,3 @@ trait NamedDbReader[T] extends DbReader[T] {
 
   }
 }
-
-trait DbReaderImplicits extends DbReaderCombinators

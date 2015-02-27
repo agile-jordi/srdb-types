@@ -2,6 +2,10 @@ package com.agilogy.srdb.types
 
 import java.sql.{PreparedStatement, ResultSet}
 
+private[types] case object HasLength0{
+  val length:Int = 0
+}
+
 sealed trait DbType[T] extends DbReader[T] with DbWriter[T]{
   protected val t0 = HasLength0
 }

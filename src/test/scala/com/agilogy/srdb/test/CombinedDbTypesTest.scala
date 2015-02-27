@@ -23,7 +23,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
       (rs.getInt(_:Int)).expects(2).returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(reader[String,Int]) === ("John",23))
+    assert(db.read(dbType[String,Int]) === ("John",23))
   }
   
   it should "set PreparedStatement parameters" in {
@@ -43,7 +43,7 @@ class CombinedDbTypesTest extends FlatSpec with MockFactory{
       (rs.getInt(_:String)).expects("age").returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(reader(notNull[String]("name"), notNull[Int]("age"))) === ("John",23))
+    assert(db.read(dbType(notNull[String]("name"), notNull[Int]("age"))) === ("John",23))
   }
 
 }

@@ -2,7 +2,7 @@ package com.agilogy.srdb
 
 import java.sql.{ResultSet, PreparedStatement}
 
-package object types extends ColumnTypeInstances with DbReaderImplicits with DbTypeImplicits{
+package object types extends ColumnTypeInstances with DbTypeImplicits{
 
   def set[T:DbWriter](ps:PreparedStatement,value:T):Unit = implicitly[DbWriter[T]].set(ps,value)
   def get[T:DbReader](rs:ResultSet):T = implicitly[DbReader[T]].get(rs)
