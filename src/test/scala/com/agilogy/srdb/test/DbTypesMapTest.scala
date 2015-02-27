@@ -73,18 +73,4 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
     assert(db.read(personReader) === Person("John",23))
   }
 
-  behavior of "combined positional db readers"
-
-  def read[T:DbReader,T2](rs:ResultSet, f:T => T2):T2 = implicitly[DbReader[T]].map(f).get(rs)
-
-  it should "read using the new read function" in{
-    (rs.getString(_:Int)).expects(1).returning("John")
-    (rs.wasNull _).expects().returning(false)
-    (rs.getInt(_:Int)).expects(2).returning(23)
-    (rs.wasNull _).expects().returning(false)
-
-    assert(read(rs, (Person.apply _).tupled) === Person("John",23))
-
-  }
-  
 }
