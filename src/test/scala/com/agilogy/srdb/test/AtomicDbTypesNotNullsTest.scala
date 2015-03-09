@@ -8,7 +8,6 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
-  val db = new DummyDb(ps, rs)
 
   import com.agilogy.srdb.types._
 
@@ -22,9 +21,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getByte(_: String)).expects("c").returning(3.toByte)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3.toByte)
-    assert(db.read(notNull[Byte]) === 3.toByte)
-    assert(db.read(notNull[Byte]("c")) === 3.toByte)
+    set(ps,3.toByte)
+    assert(get[Byte](rs) === 3.toByte)
+    assert(get(rs)(notNull[Byte]("c")) === 3.toByte)
   }
 
   it should "prepare statements with a Short param and read resultsets with a Short column" in {
@@ -35,9 +34,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getShort(_: String)).expects("c").returning(3.toShort)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3.toShort)
-    assert(db.read(notNull[Short]) === 3.toShort)
-    assert(db.read(notNull[Short]("c")) === 3.toShort)
+    set(ps,3.toShort)
+    assert(get[Short](rs) === 3.toShort)
+    assert(get(rs)(notNull[Short]("c")) === 3.toShort)
   }
 
   it should "execute selects with an Int param" in {
@@ -48,9 +47,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getInt(_: String)).expects("c").returning(3)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3)
-    assert(db.read(notNull[Int]) === 3)
-    assert(db.read(notNull[Int]("c")) === 3)
+    set(ps,3)
+    assert(get[Int](rs) === 3)
+    assert(get(rs)(notNull[Int]("c")) === 3)
   }
 
   it should "prepare statements with a Long param and read resultsets with a Long column" in {
@@ -61,9 +60,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getLong(_: String)).expects("c").returning(3l)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3l)
-    assert(db.read(notNull[Long]) === 3l)
-    assert(db.read(notNull[Long]("c")) === 3l)
+    set(ps,3l)
+    assert(get[Long](rs) === 3l)
+    assert(get(rs)(notNull[Long]("c")) === 3l)
   }
 
   it should "prepare statements with a Float param and read resultsets with a Float column" in {
@@ -74,9 +73,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getFloat(_: String)).expects("c").returning(3.0f)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3.0f)
-    assert(db.read(notNull[Float]) === 3.0f)
-    assert(db.read(notNull[Float]("c")) === 3.0f)
+    set(ps,3.0f)
+    assert(get[Float](rs) === 3.0f)
+    assert(get(rs)(notNull[Float]("c")) === 3.0f)
   }
 
   it should "prepare statements with a Double param and read resultsets with a Double column" in {
@@ -87,9 +86,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDouble(_: String)).expects("c").returning(3.0)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(3.0)
-    assert(db.read(notNull[Double]) === 3.0)
-    assert(db.read(notNull[Double]("c")) === 3.0)
+    set(ps,3.0)
+    assert(get[Double](rs) === 3.0)
+    assert(get(rs)(notNull[Double]("c")) === 3.0)
   }
 
   it should "prepare statements with a String param and read resultsets with a String column" in {
@@ -100,9 +99,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getString(_: String)).expects("c").returning("hi!")
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare("hi!")
-    assert(db.read(notNull[String]) === "hi!")
-    assert(db.read(notNull[String]("c")) === "hi!")
+    set(ps,"hi!")
+    assert(get[String](rs) === "hi!")
+    assert(get(rs)(notNull[String]("c")) === "hi!")
   }
 
   it should "prepare statements with a Boolean param and read resultsets with a Boolean column" in {
@@ -113,9 +112,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getBoolean(_: String)).expects("c").returning(false)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(false)
-    assert(db.read(notNull[Boolean]) === false)
-    assert(db.read(notNull[Boolean]("c")) === false)
+    set(ps,false)
+    assert(get[Boolean](rs) === false)
+    assert(get(rs)(notNull[Boolean]("c")) === false)
   }
 
   it should "prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
@@ -128,9 +127,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDate(_: String)).expects("c").returning(sqlDate)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(d)
-    assert(db.read(notNull[java.util.Date]) === d)
-    assert(db.read(notNull[java.util.Date]("c")) === d)
+    set(ps,d)
+    assert(get[java.util.Date](rs) === d)
+    assert(get(rs)(notNull[java.util.Date]("c")) === d)
   }
 
   it should "prepare statements with a BigDecimal param and read resultsets with a BigDecimal column" in {
@@ -143,9 +142,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getBigDecimal(_: String)).expects("c").returning(javaBd)
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(value)
-    assert(db.read(notNull[BigDecimal]) === value)
-    assert(db.read(notNull[BigDecimal]("c")) === value)
+    set(ps,value)
+    assert(get[BigDecimal](rs) === value)
+    assert(get(rs)(notNull[BigDecimal]("c")) === value)
   }
   
   it should "throw if it reads a null value" in{
@@ -155,8 +154,8 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getString(_: String)).expects("c").returning(null)
       (rs.wasNull _).expects().returning(true)
     }
-    intercept[NullColumnReadException](db.read(notNull[String]))
-    intercept[NullColumnReadException](db.read(notNull[String]("c")))
+    intercept[NullColumnReadException](get[String](rs))
+    intercept[NullColumnReadException](get(rs)(notNull[String]("c")))
   }
 
 }

@@ -12,7 +12,6 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
 
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
-  val db = new DummyDb(ps, rs)
 
   behavior of "atomic db types xmap"
   
@@ -25,21 +24,21 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
       (rs.getString(_:Int)).expects(1).returning("John")
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(Name("Jane"))
-    assert(db.read(notNull[Name]) === Name("John"))
+    set(ps,Name("Jane"))
+    assert(get[Name](rs) === Name("John"))
   }
   
   behavior of "named db types xmap"
 
-  it should "create a new db type mapping over a function" in {
+  it should "create a new column type mapping over a function" in {
     implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply,_.v)
     inSequence{
       (ps.setString _).expects(1,"Jane")
       (rs.getString(_:String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
     }
-    db.prepare(Name("Jane"))
-    assert(db.read(notNull[Name]("name")) === Name("John"))
+    set(ps,Name("Jane"))
+    assert(get(rs)(notNull[Name]("name")) === Name("John"))
   }
   
 //  behavior of "combined db types xmap"
@@ -70,7 +69,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
       (rs.getInt(_:String)).expects("age").returning(23)
       (rs.wasNull _).expects().returning(false)
     }
-    assert(db.read(personReader) === Person("John",23))
+    assert(get(rs)(personReader) === Person("John",23))
   }
 
 }
