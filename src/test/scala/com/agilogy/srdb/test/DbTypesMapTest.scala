@@ -45,19 +45,19 @@ class DbTypesMapTest extends FlatSpec with MockFactory{
   
   case class Person(name:String, age:Int)
 
-//  it should "create a new db type mapping over a function" in {
-//    implicit val personDbType = dbType[(String,Int)].xmap[Person](Person.tupled,Person.unapply(_).get)
-//    inSequence{
-//      (ps.setString _).expects(1,"Jane")
-//      (ps.setInt _).expects(2,25)
-//      (rs.getString(_:Int)).expects(1).returning("John")
-//      (rs.wasNull _).expects().returning(false)
-//      (rs.getInt(_:Int)).expects(2).returning(23)
-//      (rs.wasNull _).expects().returning(false)
-//    }
-//    db.prepare(Person("Jane",25))
-//    assert(db.read(rsReader[Person]) === Person("John",23))
-//  }
+  it should "create a new compound db type mapping over a function" in {
+    implicit val personDbType = dbType[String,Int].xmap[Person](Person.tupled,Person.unapply(_).get)
+    inSequence{
+      (ps.setString _).expects(1,"Jane")
+      (ps.setInt _).expects(2,25)
+      (rs.getString(_:Int)).expects(1).returning("John")
+      (rs.wasNull _).expects().returning(false)
+      (rs.getInt(_:Int)).expects(2).returning(23)
+      (rs.wasNull _).expects().returning(false)
+    }
+    set(ps,Person("Jane",25))
+    assert(get[Person](rs) === Person("John",23))
+  }
 
   behavior of "combined named db readers map"
 
