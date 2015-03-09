@@ -22,6 +22,8 @@ trait DbTypeCombinators{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
   }
   #
+  // $COVERAGE-ON$
+  // $COVERAGE-OFF$
   ]
-
+  // $COVERAGE-ON$
 }
