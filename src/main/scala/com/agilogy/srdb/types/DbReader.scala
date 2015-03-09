@@ -2,11 +2,13 @@ package com.agilogy.srdb.types
 
 import java.sql.ResultSet
 
-trait DbReader[T] {
+trait DbReader[T] extends (ResultSet => T) {
 
   self =>
 
   def get(rs: ResultSet): T
+
+  def apply(rs:ResultSet):T = get(rs)
   
   def map[T2](f: T => T2): DbReader[T2]
 
