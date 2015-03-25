@@ -24,5 +24,7 @@ object JdbcType{
   case object Float extends JdbcType(Types.FLOAT)
   case object Double extends JdbcType(Types.DOUBLE)
 
+  case object Array extends JdbcType(Types.ARRAY)
+
 }
 

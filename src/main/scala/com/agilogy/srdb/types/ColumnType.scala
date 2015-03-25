@@ -1,6 +1,8 @@
 package com.agilogy.srdb.types
 
-import java.sql.{ResultSet, PreparedStatement}
+import java.sql.{PreparedStatement, ResultSet}
+import scala.collection.mutable.ListBuffer
+import scala.reflect.ClassTag
 
 sealed trait ColumnType[T] {
   self =>
@@ -11,7 +13,7 @@ sealed trait ColumnType[T] {
 
   protected[types] def unsafeGet(rs: ResultSet, name: String): T
 
-  protected val jdbcTypes: Seq[JdbcType]
+  val jdbcTypes: Seq[JdbcType]
 
   def get(rs: ResultSet, pos: Int): Option[T] = {
     val res = unsafeGet(rs, pos)
@@ -41,18 +43,18 @@ sealed trait ColumnType[T] {
     override val jdbcTypes: Seq[JdbcType] = self.jdbcTypes
 
   }
-  
+
 }
 
-object ColumnType{
-  
-  def apply[T:ColumnType]: ColumnType[T] = implicitly[ColumnType[T]]
+object ColumnType {
+
+  def apply[T: ColumnType]: ColumnType[T] = implicitly[ColumnType[T]]
 
   private[types] def from[T](
-                               uset: (PreparedStatement, Int, T) => Unit,
-                               ugetp: (ResultSet, Int) => T,
-                               ugetn: (ResultSet, String) => T,
-                               inJdbcTypes: JdbcType*): ColumnType[T] = new ColumnType[T] {
+                              uset: (PreparedStatement, Int, T) => Unit,
+                              ugetp: (ResultSet, Int) => T,
+                              ugetn: (ResultSet, String) => T,
+                              inJdbcTypes: JdbcType*): ColumnType[T] = new ColumnType[T] {
 
     require(inJdbcTypes.nonEmpty)
 
@@ -93,6 +95,32 @@ trait ColumnTypeInstances {
     (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal),
     _.getBigDecimal(_: Int),
     _.getBigDecimal(_: String), JdbcType.Numeric)
+
+  def arrayDbType[T: ColumnType : ClassTag](databaseTypeName: String) = new ColumnType[Seq[T]] {
+
+    val simpleType = implicitly[ColumnType[T]]
+
+    override protected[types] def unsafeSet(ps: PreparedStatement, pos: Int, value: Seq[T]): Unit = {
+      val a = Array(value.map(_.asInstanceOf[AnyRef]): _*)
+      ps.setArray(pos, ps.getConnection.createArrayOf(databaseTypeName, a))
+    }
+
+    private def readArray(a: java.sql.Array): Seq[T] = {
+      val arrayRs = a.getResultSet
+      val res = ListBuffer[T]()
+      while (arrayRs.next()) {
+        res.append(simpleType.get(arrayRs, 1).get)
+      }
+      res
+    }
+
+    override protected[types] def unsafeGet(rs: ResultSet, pos: Int): Seq[T] = readArray(rs.getArray(pos))
+
+    override protected[types] def unsafeGet(rs: ResultSet, name: String): Seq[T] = readArray(rs.getArray(name))
+
+    override val jdbcTypes: Seq[JdbcType] = Seq(JdbcType.Array)
+  }
+
 
 }
 
