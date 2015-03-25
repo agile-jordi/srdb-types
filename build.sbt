@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41" % "test",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test",
-  "com.agilogy" %% "srdb-core" % "1.0.0-SNAPSHOT" % "test"
+  "com.agilogy" %% "srdb-core" % "1.0.0" % "test"
 )
 
 ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "<empty>"
