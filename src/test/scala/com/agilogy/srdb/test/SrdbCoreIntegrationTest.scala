@@ -2,7 +2,6 @@ package com.agilogy.srdb.test
 
 import java.sql.{Statement, ResultSet, PreparedStatement, Connection}
 
-import com.agilogy.srdb
 import com.agilogy.srdb.Srdb._
 import com.agilogy.srdb.types._
 import org.scalamock.scalatest.MockFactory
@@ -22,16 +21,13 @@ class SrdbCoreIntegrationTest extends FlatSpec with MockFactory {
   implicit val ageDbType = ColumnType[Int].xmap[Age](Age.apply,_.v)
   implicit val personReader = dbType(notNull[Name]("name"),notNull[Age]("age")).map[Person]((Person.apply _).tupled)
 
-  implicit def argumentsSetter[T:DbType]:srdb.ArgumentsSetter[T] = new srdb.ArgumentsSetter[T] {
-    override def set(ps: PreparedStatement, value: T): Unit = implicitly[DbType[T]].set(ps,value)
-  }
-
-  it should "be able to use readers in srdb.core select" in {
-    val sql = "select name,dept from people where name = ?"
+  it should "be able to use simple column readers and arguments in srdb.core select" in {
+    val sql = "select name,dept from people where name = ? and age > ?"
     val selectPeopleByName = select(sql)(personReader)
     inSequence{
       (conn.prepareStatement(_:String,_:Int)).expects(sql,Statement.NO_GENERATED_KEYS).returning(ps)
       (ps.setString(_:Int , _:String)).expects(1,"Jordi")
+      (ps.setInt(_:Int , _:Int)).expects(2,18)
       (ps.executeQuery _).expects()
       (ps.getResultSet _).expects().returning(rs)
       (rs.next _).expects().returning(true)
@@ -43,7 +39,8 @@ class SrdbCoreIntegrationTest extends FlatSpec with MockFactory {
       (rs.close _).expects()
       (ps.close _).expects()
     }
-    val res = selectPeopleByName(conn,Name("Jordi"))
+    val res = selectPeopleByName(conn, Name("Jordi"), Age(18))
     assert(res === List(Person(Name("Jordi"),Age(37))))
   }
+
 }
