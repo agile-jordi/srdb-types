@@ -8,6 +8,8 @@ version := "1.0.0-SNAPSHOT"
 
 crossScalaVersions := Seq("2.10.4","2.11.5")
 
+resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
+
 libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41" % "test",
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
