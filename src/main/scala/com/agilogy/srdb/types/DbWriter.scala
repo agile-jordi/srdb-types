@@ -8,9 +8,8 @@ trait DbWriter[T] {
 
   val length: Int
 
-  def set(ps: PreparedStatement, value: T): Unit = set(ps,1,value)
+  def set(ps: PreparedStatement, value: T): Unit = set(ps, 1, value)
 
-  def set(ps: PreparedStatement, pos:Int, value: T): Unit
+  def set(ps: PreparedStatement, pos: Int, value: T): Unit
 
 }
-

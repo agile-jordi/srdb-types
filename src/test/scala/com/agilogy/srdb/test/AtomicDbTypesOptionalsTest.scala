@@ -6,8 +6,8 @@ import org.scalatest.FlatSpec
 
 class AtomicDbTypesOptionalsTest extends FlatSpec with MockFactory {
 
-  val ps = mock[PreparedStatement]
-  val rs = mock[ResultSet]
+  val ps: PreparedStatement = mock[PreparedStatement]
+  val rs: ResultSet = mock[ResultSet]
 
   behavior of "optional DbType implicit conversion"
 
@@ -15,21 +15,20 @@ class AtomicDbTypesOptionalsTest extends FlatSpec with MockFactory {
 
   it should "set null parameters using None values of type Option[T]" in {
     inSequence {
-      (ps.setNull(_:Int , _:Int)).expects(1, Types.INTEGER)
+      (ps.setNull(_: Int, _: Int)).expects(1, Types.INTEGER)
     }
-    val optInt:Option[Int] = None
-    set(ps,optInt)
+    val optInt: Option[Int] = None
+    set(ps, optInt)
   }
-
 
   it should "set optinoal parameters using Some(v) of type Option[T]" in {
     inSequence {
-      (ps.setInt(_:Int , _:Int)).expects(1,3)
+      (ps.setInt(_: Int, _: Int)).expects(1, 3)
     }
-    val optInt:Option[Int] = Some(3)
-    set(ps,optInt)
+    val optInt: Option[Int] = Some(3)
+    set(ps, optInt)
   }
-  
+
   it should "read null parameters as None of type Option[T]" in {
     inSequence {
       (ps.setInt(_, _)).expects(1, 3)
@@ -38,11 +37,10 @@ class AtomicDbTypesOptionalsTest extends FlatSpec with MockFactory {
       (rs.getInt(_: String)).expects("c").returning(0)
       (rs.wasNull _).expects().returning(true)
     }
-    set(ps,3)
+    set(ps, 3)
     assert(get[Option[Int]](rs) === None)
     assert(get(rs)(optional[Int]("c")) === None)
   }
-
 
   it should "read optional parameters as Some(v) of type Option[T]" in {
     inSequence {
@@ -52,7 +50,7 @@ class AtomicDbTypesOptionalsTest extends FlatSpec with MockFactory {
       (rs.getInt(_: String)).expects("c").returning(3)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3)
+    set(ps, 3)
     assert(get[Option[Int]](rs) === Some(3))
     assert(get(rs)(optional[Int]("c")) === Some(3))
   }

@@ -2,9 +2,9 @@ package com.agilogy.srdb.types
 
 import java.sql.Types
 
-sealed abstract class JdbcType(val code:Int)
+sealed abstract class JdbcType(val code: Int)
 
-object JdbcType{
+object JdbcType {
   case object TinyInt extends JdbcType(Types.TINYINT)
   case object SmallInt extends JdbcType(Types.SMALLINT)
   case object Integer extends JdbcType(Types.INTEGER)

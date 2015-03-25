@@ -2,17 +2,20 @@ package com.agilogy.srdb.test
 
 import java.sql._
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.FlatSpec
+import org.scalatest.{ Resources, FlatSpec }
+
+import scala.reflect.Manifest
+import scala.util.control.NonFatal
 
 class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
 
-  val ps = mock[PreparedStatement]
-  val rs = mock[ResultSet]
+  val ps: PreparedStatement = mock[PreparedStatement]
+  val rs: ResultSet = mock[ResultSet]
 
   import com.agilogy.srdb.types._
 
   behavior of "not null ColumnType implicit conversions"
-  
+
   it should "prepare statements with a Byte param and read resultsets with a Byte column" in {
     inSequence {
       (ps.setByte(_, _)).expects(1, 3.toByte)
@@ -21,7 +24,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getByte(_: String)).expects("c").returning(3.toByte)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3.toByte)
+    set(ps, 3.toByte)
     assert(get[Byte](rs) === 3.toByte)
     assert(get(rs)(notNull[Byte]("c")) === 3.toByte)
   }
@@ -34,7 +37,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getShort(_: String)).expects("c").returning(3.toShort)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3.toShort)
+    set(ps, 3.toShort)
     assert(get[Short](rs) === 3.toShort)
     assert(get(rs)(notNull[Short]("c")) === 3.toShort)
   }
@@ -47,7 +50,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getInt(_: String)).expects("c").returning(3)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3)
+    set(ps, 3)
     assert(get[Int](rs) === 3)
     assert(get(rs)(notNull[Int]("c")) === 3)
   }
@@ -60,7 +63,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getLong(_: String)).expects("c").returning(3l)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3l)
+    set(ps, 3l)
     assert(get[Long](rs) === 3l)
     assert(get(rs)(notNull[Long]("c")) === 3l)
   }
@@ -73,7 +76,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getFloat(_: String)).expects("c").returning(3.0f)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3.0f)
+    set(ps, 3.0f)
     assert(get[Float](rs) === 3.0f)
     assert(get(rs)(notNull[Float]("c")) === 3.0f)
   }
@@ -86,7 +89,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDouble(_: String)).expects("c").returning(3.0)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,3.0)
+    set(ps, 3.0)
     assert(get[Double](rs) === 3.0)
     assert(get(rs)(notNull[Double]("c")) === 3.0)
   }
@@ -99,7 +102,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getString(_: String)).expects("c").returning("hi!")
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,"hi!")
+    set(ps, "hi!")
     assert(get[String](rs) === "hi!")
     assert(get(rs)(notNull[String]("c")) === "hi!")
   }
@@ -112,7 +115,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getBoolean(_: String)).expects("c").returning(false)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,false)
+    set(ps, false)
     assert(get[Boolean](rs) === false)
     assert(get(rs)(notNull[Boolean]("c")) === false)
   }
@@ -127,7 +130,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDate(_: String)).expects("c").returning(sqlDate)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,d)
+    set(ps, d)
     assert(get[java.util.Date](rs) === d)
     assert(get(rs)(notNull[java.util.Date]("c")) === d)
   }
@@ -142,12 +145,22 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getBigDecimal(_: String)).expects("c").returning(javaBd)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,value)
+    set(ps, value)
     assert(get[BigDecimal](rs) === value)
     assert(get(rs)(notNull[BigDecimal]("c")) === value)
   }
-  
-  it should "throw if it reads a null value" in{
+
+  def checkException[T <: Throwable](f: => Any)(implicit manifest: Manifest[T]): Unit = {
+    val clazz = manifest.runtimeClass.asInstanceOf[Class[T]]
+    try {
+      f
+      fail("Should have thrown a exception")
+    } catch {
+      case NonFatal(t) if clazz.isAssignableFrom(t.getClass) => ()
+    }
+  }
+
+  it should "throw if it reads a null value" in {
     inSequence {
       (rs.getString(_: Int)).expects(1).returning(null)
       (rs.wasNull _).expects().returning(true)
@@ -155,7 +168,7 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(true)
     }
     intercept[NullColumnReadException](get[String](rs))
-    intercept[NullColumnReadException](get(rs)(notNull[String]("c")))
+    checkException[NullColumnReadException](get(rs)(notNull[String]("c")))
   }
 
 }
