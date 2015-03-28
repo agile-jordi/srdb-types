@@ -9,8 +9,6 @@ private[types] case object HasLength0 {
 trait DbType[T] extends PositionalDbReader[T] with DbWriter[T] {
   self =>
 
-  protected val t0 = HasLength0
-
   def xmap[T2](f: T => T2, xf: T2 => T): DbType[T2] = new DbType[T2] {
     override val length: Int = self.length
 

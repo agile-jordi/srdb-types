@@ -18,6 +18,8 @@ trait PositionalDbReader[T] extends DbReader[T] {
 
   self =>
 
+  protected val t0 = HasLength0
+
   val length: Int
 
   def get(rs: ResultSet): T = get(rs, 1)
