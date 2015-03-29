@@ -9,6 +9,7 @@ import scala.util.control.NonFatal
 
 class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
 
+  val conn: Connection = mock[Connection]
   val ps: PreparedStatement = mock[PreparedStatement]
   val rs: ResultSet = mock[ResultSet]
 
@@ -148,6 +149,40 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
     set(ps, value)
     assert(get[BigDecimal](rs) === value)
     assert(get(rs)(notNull[BigDecimal]("c")) === value)
+  }
+
+  it should "prepare statements with an array param and read resultsets with an array column" in {
+    val value = Seq(1,2)
+    val arr = mock[java.sql.Array]
+    implicit val intArrayDbType = arrayDbType[Int]("int")
+    val arrRs = mock[ResultSet]
+    def expectReadArray() = {
+      (() => arr.getResultSet).expects().returning(arrRs)
+      (arrRs.next _).expects().returning(true)
+      (arrRs.getInt(_:Int)).expects(1).returning(1)
+      (arrRs.wasNull _).expects().returning(false)
+      (arrRs.next _).expects().returning(true)
+      (arrRs.getInt(_:Int)).expects(1).returning(2)
+      (arrRs.wasNull _).expects().returning(false)
+      (arrRs.next _).expects().returning(false)
+    }
+    inSequence{
+      (ps.getConnection _).expects().returning(conn)
+      (conn.createArrayOf _).expects(where {
+        (typeName:String,elements:scala.Array[AnyRef]) =>
+          typeName == "int" && elements.toSeq == value
+      }).returning(arr)
+      (ps.setArray _).expects(1,arr)
+      (rs.getArray(_:Int)).expects(1).returning(arr)
+      expectReadArray()
+      (rs.wasNull _).expects().returning(false)
+      (rs.getArray(_:String)).expects("c").returning(arr)
+      expectReadArray()
+      (rs.wasNull _).expects().returning(false)
+    }
+    set(ps,value)
+    assert(get[Seq[Int]](rs) === value)
+    assert(get(rs)(notNull[Seq[Int]]("c")) === value)
   }
 
   def checkException[T <: Throwable](f: => Any)(implicit manifest: Manifest[T]): Unit = {
