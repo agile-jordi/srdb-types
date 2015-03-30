@@ -152,35 +152,35 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
   }
 
   it should "prepare statements with an array param and read resultsets with an array column" in {
-    val value = Seq(1,2)
+    val value = Seq(1, 2)
     val arr = mock[java.sql.Array]
     implicit val intArrayDbType = arrayDbType[Int]("int")
     val arrRs = mock[ResultSet]
     def expectReadArray() = {
       (() => arr.getResultSet).expects().returning(arrRs)
       (arrRs.next _).expects().returning(true)
-      (arrRs.getInt(_:Int)).expects(1).returning(1)
+      (arrRs.getInt(_: Int)).expects(1).returning(1)
       (arrRs.wasNull _).expects().returning(false)
       (arrRs.next _).expects().returning(true)
-      (arrRs.getInt(_:Int)).expects(1).returning(2)
+      (arrRs.getInt(_: Int)).expects(1).returning(2)
       (arrRs.wasNull _).expects().returning(false)
       (arrRs.next _).expects().returning(false)
     }
-    inSequence{
+    inSequence {
       (ps.getConnection _).expects().returning(conn)
       (conn.createArrayOf _).expects(where {
-        (typeName:String,elements:scala.Array[AnyRef]) =>
-          typeName == "int" && elements.toSeq == value
+        (typeName: String, elements: scala.Array[AnyRef]) =>
+          typeName == "int" && elements.toSeq == value.asInstanceOf[Seq[AnyRef]]
       }).returning(arr)
-      (ps.setArray _).expects(1,arr)
-      (rs.getArray(_:Int)).expects(1).returning(arr)
+      (ps.setArray _).expects(1, arr)
+      (rs.getArray(_: Int)).expects(1).returning(arr)
       expectReadArray()
       (rs.wasNull _).expects().returning(false)
-      (rs.getArray(_:String)).expects("c").returning(arr)
+      (rs.getArray(_: String)).expects("c").returning(arr)
       expectReadArray()
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps,value)
+    set(ps, value)
     assert(get[Seq[Int]](rs) === value)
     assert(get(rs)(notNull[Seq[Int]]("c")) === value)
   }
@@ -193,6 +193,13 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
     } catch {
       case NonFatal(t) if clazz.isAssignableFrom(t.getClass) => ()
     }
+  }
+
+  it should "prepare a statement in a given position" in {
+    inSequence {
+      (ps.setString _).expects(3, "hey!")
+    }
+    set(ps, 3, "hey!")
   }
 
   it should "throw if it reads a null value" in {
