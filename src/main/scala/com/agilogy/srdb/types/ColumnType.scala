@@ -1,6 +1,7 @@
 package com.agilogy.srdb.types
 
-import java.sql.{ PreparedStatement, ResultSet }
+import java.sql.{ Timestamp, PreparedStatement, ResultSet }
+import java.util.Date
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 
@@ -86,10 +87,20 @@ trait ColumnTypeInstances {
 
   private def toSqlDate(d: java.util.Date) = new java.sql.Date(d.getTime)
 
-  implicit val DbDate = ColumnType.from[java.util.Date](
+  private def toSqlTimestamp(d: java.util.Date) = new Timestamp(d.getTime)
+
+  val DbDate = ColumnType.from[java.util.Date](
     (ps, pos, v) => ps.setDate(pos, toSqlDate(v)),
     _.getDate(_: Int),
-    _.getDate(_: String), JdbcType.Date
+    _.getDate(_: String),
+    JdbcType.Date
+  )
+
+  implicit val DbTimestamp: ColumnType[Date] = ColumnType.from[java.util.Date](
+    (ps, pos, v) => ps.setTimestamp(pos, toSqlTimestamp(v)),
+    (rs, pos) => new java.util.Date(rs.getTimestamp(pos).getTime),
+    (rs, name) => new java.util.Date(rs.getTimestamp(name).getTime),
+    JdbcType.Timestamp
   )
 
   implicit val DbBigDecimal = ColumnType.from[BigDecimal](

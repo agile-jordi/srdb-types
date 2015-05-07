@@ -123,6 +123,21 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
 
   it should "prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
     val d = new java.util.Date(123456l)
+    val sqlTimestamp = new java.sql.Timestamp(d.getTime)
+    inSequence {
+      (ps.setTimestamp(_: Int, _: java.sql.Timestamp)).expects(1, sqlTimestamp)
+      (rs.getTimestamp(_: Int)).expects(1).returning(sqlTimestamp)
+      (rs.wasNull _).expects().returning(false)
+      (rs.getTimestamp(_: String)).expects("c").returning(sqlTimestamp)
+      (rs.wasNull _).expects().returning(false)
+    }
+    set(ps, d)
+    assert(get[java.util.Date](rs) === d)
+    assert(get(rs)(notNull[java.util.Date]("c")) === d)
+  }
+
+  it should "deal with dates (and not timestamps), prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
+    val d = new java.util.Date(123456l)
     val sqlDate = new java.sql.Date(d.getTime)
     inSequence {
       (ps.setDate(_: Int, _: java.sql.Date)).expects(1, sqlDate)
@@ -131,9 +146,9 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDate(_: String)).expects("c").returning(sqlDate)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps, d)
-    assert(get[java.util.Date](rs) === d)
-    assert(get(rs)(notNull[java.util.Date]("c")) === d)
+    set(ps, d)(notNullView(DbDate))
+    assert(get[java.util.Date](rs)(notNullView(DbDate)) === d)
+    assert(get(rs)(notNull[java.util.Date]("c")(DbDate)) === d)
   }
 
   it should "prepare statements with a BigDecimal param and read resultsets with a BigDecimal column" in {
