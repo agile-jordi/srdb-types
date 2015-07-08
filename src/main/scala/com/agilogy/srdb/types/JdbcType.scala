@@ -2,8 +2,17 @@ package com.agilogy.srdb.types
 
 import java.sql.Types
 
+/**
+ * A type according to the JDBC specification
+ *
+ * This class is only used because JDBC, until 3.0, uses `Int`s  stead of typed instances
+ *
+ * @param code The JDBC `Int` code of the JDBC type
+ * @group API
+ */
 sealed abstract class JdbcType(val code: Int)
 
+/** @group API */
 object JdbcType {
   case object TinyInt extends JdbcType(Types.TINYINT)
   case object SmallInt extends JdbcType(Types.SMALLINT)

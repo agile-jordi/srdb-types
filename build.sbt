@@ -39,6 +39,8 @@ scalacOptions ++= Seq(
   "-Xfuture"
 )
 
+scalacOptions in (Compile,doc) ++= Seq("-groups", "-implicits", "-diagrams", "-skip-packages","")
+
 // Execute static analysis via `lint:compile`
 val LintTarget = config("lint").extend(Compile)
 

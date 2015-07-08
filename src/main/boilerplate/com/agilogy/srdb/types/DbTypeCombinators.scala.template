@@ -2,10 +2,13 @@ package com.agilogy.srdb.types
 
 import java.sql.{PreparedStatement, ResultSet}
 
+/** @group Reader and Type Combinators */
 trait DbTypeCombinators{
 
 
-  [2..22#implicit def dbType1[[#T1:DbType#]]: DbType[([#T1#])] = new DbType[([#T1#])]{
+  [2..22#
+  /** @group Reader and Type Combinators */
+  implicit def dbType1[[#T1:DbType#]]: DbType[([#T1#])] = new DbType[([#T1#])]{
     [#private val t1 = implicitly[DbType[T1]]#
     ]
     override val length: Int = [#t1.length# + ]
@@ -16,6 +19,7 @@ trait DbTypeCombinators{
     }
   }
 
+  /** @group Reader and Type Combinators */
   implicit def positionalDbReader1[[#T1:PositionalDbReader#]]: PositionalDbReader[([#T1#])] = new PositionalDbReader[([#T1#])]{
       [#private val t1 = implicitly[PositionalDbReader[T1]]#
       ]
@@ -23,8 +27,10 @@ trait DbTypeCombinators{
       override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
     }
   
+  /** @group Reader and Type Combinators */
   def dbType[[#T1:DbType#]]: DbType[([#T1#])] = dbType1[[#T1#]]
   
+  /** @group Reader and Type Combinators */
   def dbType[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
   }

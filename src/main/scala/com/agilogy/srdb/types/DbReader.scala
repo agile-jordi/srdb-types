@@ -2,6 +2,18 @@ package com.agilogy.srdb.types
 
 import java.sql.ResultSet
 
+/**
+ * A type class of readers of instances of type `T`.
+ *
+ * Given a `ResultSet`, a DbReader may read any number of columns and return an instance of `T`
+ *
+ * It MUST NOT call `ResultSet.next`
+ *
+ * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]], which are subclasses of [[DbReader]] are implicitly available for every [[ColumnType]]
+ *
+ * @tparam T The Scala class returned when reading from the `ResultSet`
+ * @group API
+ */
 trait DbReader[T] extends (ResultSet => T) {
 
   self =>
@@ -14,6 +26,17 @@ trait DbReader[T] extends (ResultSet => T) {
 
 }
 
+/**
+ * A [[DbReader]] that reads consecutive columns by position, instead of reading them by name
+ *
+ * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]], which are subclasses of [[PositionalDbReader]] are implicitly available for every [[ColumnType]]
+ *
+ * An instance of [[PositionalDbReader]]`[(T1,...,Tn)]` is available implicitly from [[NamedDbReader]]s for T1 to Tn.
+ * An instance of [[DbType]]`[(T1,...,Tn)]` (which a subclass of [[PositionalDbReader]]`[(T1,...,Tn)]`)  is available implicitly from [[DbType]]s for T1 to Tn.
+ *
+ * @tparam T The Scala class returned when reading from the `ResultSet`
+ * @group API
+ */
 trait PositionalDbReader[T] extends DbReader[T] {
 
   self =>
@@ -34,6 +57,14 @@ trait PositionalDbReader[T] extends DbReader[T] {
   }
 }
 
+/**
+ * A [[DbReader]] that reads columns by name, instead of reading them by position
+ *
+ * An instance of NamedDbReader can be obtained from a [[ColumnType]] using [[com.agilogy.srdb.types#notNull]] or [[com.agilogy.srdb.types#optional]].
+ *
+ * @tparam T The Scala class returned when reading from the `ResultSet`
+ * @group API
+ */
 trait NamedDbReader[T] extends DbReader[T] {
 
   self =>
@@ -47,11 +78,27 @@ trait NamedDbReader[T] extends DbReader[T] {
   }
 }
 
+/**
+ * A [[NamedDbReader]] that reads a single not null column and always returns a result
+ *
+ * An instance of [[NotNullAtomicNamedDbReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.notNull]]
+ *
+ * @tparam T The Scala class returned when reading from the `ResultSet`
+ * @group API
+ */
 case class NotNullAtomicNamedDbReader[T: ColumnType](name: String) extends NamedDbReader[T] {
 
   override def get(rs: ResultSet): T = implicitly[ColumnType[T]].get(rs, name).getOrElse(throw new NullColumnReadException)
 }
 
+/**
+ * A [[NamedDbReader]] that reads a single nullable column and may return `Some` result or `None` if the column was null
+ *
+ * An instance of [[OptionalAtomicNamedReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.optional]]
+ *
+ * @tparam T The Scala class returned when reading from the `ResultSet`
+ * @group API
+ */
 case class OptionalAtomicNamedReader[T: ColumnType](name: String) extends NamedDbReader[Option[T]] {
 
   override def get(rs: ResultSet): Option[T] = implicitly[ColumnType[T]].get(rs, name)

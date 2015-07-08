@@ -5,6 +5,14 @@ import java.util.Date
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 
+/**
+ * An type class representing an atomic database type
+ *
+ * A ColumnType is a mapping between a Scala type `T` and a database column type
+ *
+ * @tparam T The Scala type mapped to the database type
+ * @group API
+ */
 sealed trait ColumnType[T] {
   self =>
 
@@ -47,6 +55,7 @@ sealed trait ColumnType[T] {
 
 }
 
+/** @group API */
 object ColumnType {
 
   def apply[T: ColumnType]: ColumnType[T] = implicitly[ColumnType[T]]
@@ -71,24 +80,37 @@ object ColumnType {
 
 }
 
+/**
+ * Available instances of [[ColumnType]]
+ * @group Column type instances
+ */
 trait ColumnTypeInstances {
 
+  /** @group Column type instances */
   implicit val DbByte: ColumnType[Byte] = ColumnType.from[Byte](_.setByte(_, _), _.getByte(_: Int), _.getByte(_: String), JdbcType.TinyInt)
+  /** @group Column type instances */
   implicit val DbShort = ColumnType.from[Short](_.setShort(_, _), _.getShort(_: Int), _.getShort(_: String), JdbcType.SmallInt)
+  /** @group Column type instances */
   implicit val DbInt = ColumnType.from[Int](_.setInt(_, _), _.getInt(_: Int), _.getInt(_: String), JdbcType.Integer)
+  /** @group Column type instances */
   implicit val DbLong = ColumnType.from[Long](_.setLong(_, _), _.getLong(_: Int), _.getLong(_: String), JdbcType.BigInt)
 
+  /** @group Column type instances */
   implicit val DbFloat = ColumnType.from[Float](_.setFloat(_, _), _.getFloat(_: Int), _.getFloat(_: String), JdbcType.Float)
+  /** @group Column type instances */
   implicit val DbDouble = ColumnType.from[Double](_.setDouble(_, _), _.getDouble(_: Int), _.getDouble(_: String), JdbcType.Double)
 
+  /** @group Column type instances */
   implicit val DbString = ColumnType.from[String](_.setString(_, _), _.getString(_: Int), _.getString(_: String), JdbcType.Varchar, JdbcType.Char, JdbcType.LongVarchar)
 
+  /** @group Column type instances */
   implicit val DbBoolean = ColumnType.from[Boolean](_.setBoolean(_, _), _.getBoolean(_: Int), _.getBoolean(_: String), JdbcType.Boolean)
 
   private def toSqlDate(d: java.util.Date) = new java.sql.Date(d.getTime)
 
   private def toSqlTimestamp(d: java.util.Date) = new Timestamp(d.getTime)
 
+  /** @group Column type instances */
   val DbDate = ColumnType.from[java.util.Date](
     (ps, pos, v) => ps.setDate(pos, toSqlDate(v)),
     _.getDate(_: Int),
@@ -96,6 +118,7 @@ trait ColumnTypeInstances {
     JdbcType.Date
   )
 
+  /** @group Column type instances */
   implicit val DbTimestamp: ColumnType[Date] = ColumnType.from[java.util.Date](
     (ps, pos, v) => ps.setTimestamp(pos, toSqlTimestamp(v)),
     (rs, pos) => new java.util.Date(rs.getTimestamp(pos).getTime),
@@ -103,13 +126,15 @@ trait ColumnTypeInstances {
     JdbcType.Timestamp
   )
 
+  /** @group Column type instances */
   implicit val DbBigDecimal = ColumnType.from[BigDecimal](
     (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal),
     _.getBigDecimal(_: Int),
     _.getBigDecimal(_: String), JdbcType.Numeric
   )
 
-  def arrayDbType[T: ColumnType: ClassTag](databaseTypeName: String) = new ColumnType[Seq[T]] {
+  /** @group Column type instances */
+  def arrayDbType[T: ColumnType: ClassTag](databaseTypeName: String): ColumnType[Seq[T]] = new ColumnType[Seq[T]] {
 
     val reader = implicitly[DbType[T]]
 

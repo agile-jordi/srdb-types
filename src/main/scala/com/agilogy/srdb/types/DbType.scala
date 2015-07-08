@@ -6,6 +6,16 @@ private[types] case object HasLength0 {
   val length: Int = 0
 }
 
+/**
+ * A DbType is a combination of a [[PositionalDbReader]] and a [[DbWriter]]
+ *
+ * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]] are implicitly available for every [[ColumnType]]
+ *
+ * An instance of [[DbType]]`[(T1,...,Tn)]` is available implicitly from [[DbType]]s for T1 to Tn.
+ *
+ * @tparam T The Scala type represeing values read from the `ResultSet` or values to be written to a `PreparedStatement`
+ * @group API
+ */
 trait DbType[T] extends PositionalDbReader[T] with DbWriter[T] {
   self =>
 
@@ -18,6 +28,15 @@ trait DbType[T] extends PositionalDbReader[T] with DbWriter[T] {
   }
 }
 
+/**
+ * A [[DbType]] mapping a single not null column and a single not null parameter
+ *
+ * A [[NotNullAtomicDbType]] is implicitly available for every [[ColumnType]]
+ *
+ * @param columnType `implicit` The column type for this instance
+ * @tparam T The Scala type represeing values read from the `ResultSet` or values to be written to a `PreparedStatement`
+ * @group API
+ */
 case class NotNullAtomicDbType[T](implicit columnType: ColumnType[T]) extends DbType[T] {
 
   override val length: Int = 1
@@ -28,6 +47,15 @@ case class NotNullAtomicDbType[T](implicit columnType: ColumnType[T]) extends Db
 
 }
 
+/**
+ * A [[DbType]] mapping a single nullable column and a single optional parameter
+ *
+ * An [[OptionalAtomicDbType]] is implicitly available for every [[ColumnType]]
+ *
+ * @param columnType `implicit` The column type for this instance
+ * @tparam T The Scala type represeing values read from the `ResultSet` or values to be written to a `PreparedStatement`
+ * @group API
+ */
 case class OptionalAtomicDbType[T](implicit columnType: ColumnType[T]) extends DbType[Option[T]] {
 
   override val length: Int = 1
