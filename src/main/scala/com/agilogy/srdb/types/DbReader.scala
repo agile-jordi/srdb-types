@@ -31,8 +31,8 @@ trait DbReader[T] extends (ResultSet => T) {
  *
  * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]], which are subclasses of [[PositionalDbReader]] are implicitly available for every [[ColumnType]]
  *
- * An instance of [[PositionalDbReader]]`[(T1,...,Tn)]` is available implicitly from [[NamedDbReader]]s for T1 to Tn.
- * An instance of [[DbType]]`[(T1,...,Tn)]` (which a subclass of [[PositionalDbReader]]`[(T1,...,Tn)]`)  is available implicitly from [[DbType]]s for T1 to Tn.
+ * An instance of [[PositionalDbReader]]`[(T1,...,Tn)]` is available implicitly from [[PositionalDbReader]]`[T1]` to [[PositionalDbReader]]`[Tn]`.
+so * An instance of [[DbType]]`[(T1,...,Tn)]` (which a subclass of [[PositionalDbReader]]`[(T1,...,Tn)]`)  is available implicitly from [[DbType]]`[T1]` to [[DbType]]`[Tn]`.
  *
  * @tparam T The Scala class returned when reading from the `ResultSet`
  * @group API
