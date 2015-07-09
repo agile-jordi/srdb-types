@@ -172,6 +172,24 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
     assert(get(rs)(optional[BigDecimal]("n")) === None)
   }
 
+  it should "prepare statements with a BigInt param and read resultsets with a BigInt column" in {
+    val value = BigInt(2)
+    val javaBd = BigDecimal(value.bigInteger).bigDecimal
+    inSequence {
+      (ps.setBigDecimal(_: Int, _: java.math.BigDecimal)).expects(1, javaBd)
+      (rs.getBigDecimal(_: Int)).expects(1).returning(javaBd)
+      (rs.wasNull _).expects().returning(false)
+      (rs.getBigDecimal(_: String)).expects("c").returning(javaBd)
+      (rs.wasNull _).expects().returning(false)
+      (rs.getBigDecimal(_: String)).expects("n").returning(null)
+      (rs.wasNull _).expects().returning(true)
+    }
+    set(ps, value)
+    assert(get[BigInt](rs) === value)
+    assert(get(rs)(notNull[BigInt]("c")) === value)
+    assert(get(rs)(optional[BigInt]("n")) === None)
+  }
+
   def checkException[T <: Throwable](f: => Any)(implicit manifest: Manifest[T]): Unit = {
     val clazz = manifest.runtimeClass.asInstanceOf[Class[T]]
     try {

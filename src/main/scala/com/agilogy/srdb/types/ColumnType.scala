@@ -161,6 +161,20 @@ trait ColumnTypeInstances {
   )
 
   /** @group Column type instances */
+  implicit val DbBigInt = ColumnType.from[BigInt](
+    v => BigDecimal(v).bigDecimal,
+    (ps, pos, v) => ps.setBigDecimal(pos, BigDecimal(v).bigDecimal), { (rs, pos) =>
+      val bd = rs.getBigDecimal(pos)
+      if (bd == null) null
+      else bd.toBigIntegerExact
+    }, { (rs, name) =>
+      val bd = rs.getBigDecimal(name)
+      if (bd == null) null
+      else bd.toBigIntegerExact
+    }, JdbcType.Numeric
+  )
+
+  /** @group Column type instances */
   def arrayDbType[T: ColumnType: ClassTag](databaseTypeName: String): ColumnType[Seq[T]] = new ColumnType[Seq[T]] {
 
     val columnType = implicitly[ColumnType[T]]
