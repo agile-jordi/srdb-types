@@ -130,10 +130,13 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
       (rs.getTimestamp(_: String)).expects("c").returning(sqlTimestamp)
       (rs.wasNull _).expects().returning(false)
+      (rs.getTimestamp(_: String)).expects("n").returning(null)
+      (rs.wasNull _).expects().returning(true)
     }
     set(ps, d)
     assert(get[java.util.Date](rs) === d)
     assert(get(rs)(notNull[java.util.Date]("c")) === d)
+    assert(get(rs)(optional[java.util.Date]("n")) === None)
   }
 
   it should "deal with dates (and not timestamps), prepare statements with a java.util.Date param and read resultsets with a java.util.Date column" in {
@@ -160,10 +163,13 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
       (rs.getBigDecimal(_: String)).expects("c").returning(javaBd)
       (rs.wasNull _).expects().returning(false)
+      (rs.getBigDecimal(_: String)).expects("n").returning(null)
+      (rs.wasNull _).expects().returning(true)
     }
     set(ps, value)
     assert(get[BigDecimal](rs) === value)
     assert(get(rs)(notNull[BigDecimal]("c")) === value)
+    assert(get(rs)(optional[BigDecimal]("n")) === None)
   }
 
   def checkException[T <: Throwable](f: => Any)(implicit manifest: Manifest[T]): Unit = {

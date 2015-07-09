@@ -132,17 +132,32 @@ trait ColumnTypeInstances {
   implicit val DbTimestamp: ColumnType[Date] = ColumnType.from[java.util.Date](
     toSqlTimestamp,
     (ps, pos, v) => ps.setTimestamp(pos, toSqlTimestamp(v)),
-    (rs, pos) => new java.util.Date(rs.getTimestamp(pos).getTime),
-    (rs, name) => new java.util.Date(rs.getTimestamp(name).getTime),
+    { (rs, pos) =>
+      val ts = rs.getTimestamp(pos)
+      if (ts == null) null
+      else new java.util.Date(ts.getTime)
+    },
+    { (rs, name) =>
+      val ts = rs.getTimestamp(name)
+      if (ts == null) null
+      else new java.util.Date(ts.getTime)
+    },
     JdbcType.Timestamp
   )
 
   /** @group Column type instances */
   implicit val DbBigDecimal = ColumnType.from[BigDecimal](
     _.bigDecimal,
-    (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal),
-    _.getBigDecimal(_: Int),
-    _.getBigDecimal(_: String), JdbcType.Numeric
+    (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal), { (rs, pos) =>
+      val jbd: java.math.BigDecimal = rs.getBigDecimal(pos)
+      if (jbd == null) null
+      else jbd
+    }, { (rs, name) =>
+      val jbd: java.math.BigDecimal = rs.getBigDecimal(name)
+      if (jbd == null) null
+      else jbd
+    },
+    JdbcType.Numeric
   )
 
   /** @group Column type instances */
@@ -159,12 +174,15 @@ trait ColumnTypeInstances {
     }
 
     private def readArray(a: java.sql.Array): Seq[T] = {
-      val arrayRs = a.getResultSet
-      val res = ListBuffer[T]()
-      while (arrayRs.next()) {
-        res.append(reader.get(arrayRs, 2))
+      if (a == null) null
+      else {
+        val arrayRs = a.getResultSet
+        val res = ListBuffer[T]()
+        while (arrayRs.next()) {
+          res.append(reader.get(arrayRs, 2))
+        }
+        res
       }
-      res
     }
 
     override protected[types] def unsafeGet(rs: ResultSet, pos: Int): Seq[T] = readArray(rs.getArray(pos))

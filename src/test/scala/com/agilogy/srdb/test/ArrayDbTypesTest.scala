@@ -42,10 +42,13 @@ class ArrayDbTypesTest extends FlatSpec with MockFactory {
       (rs.getArray(_: String)).expects("c").returning(arr)
       expectReadArray()
       (rs.wasNull _).expects().returning(false)
+      (rs.getArray(_: String)).expects("n").returning(null)
+      (rs.wasNull _).expects().returning(true)
     }
     set(ps, value)
     assert(get[Seq[Int]](rs) === value)
     assert(get(rs)(notNull[Seq[Int]]("c")) === value)
+    assert(get(rs)(optional[Seq[Int]]("n")) === None)
   }
 
   implicit val DbId: ColumnType[Id] = DbLong.xmap[Id](Id.apply, _.value)
