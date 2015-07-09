@@ -64,7 +64,7 @@ object ColumnType {
 
   def apply[T: ColumnType]: ColumnType[T] = implicitly[ColumnType[T]]
 
-  private[types] def from[T](
+  def from[T](
     toJdbcArg: (T) => AnyRef,
     uset: (PreparedStatement, Int, T) => Unit,
     ugetp: (ResultSet, Int) => T,
