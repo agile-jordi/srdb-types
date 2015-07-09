@@ -28,7 +28,7 @@ object JdbcType {
   case object Date extends JdbcType(Types.DATE, "DATE")
   case object Time extends JdbcType(Types.TIME, "TIME")
   case object Timestamp extends JdbcType(Types.TIMESTAMP, "TIMESTAMP")
-  case object TimestampTZ extends JdbcType(Types.TIMESTAMP_WITH_TIMEZONE, "TIMESTAMPTZ")
+//  case object TimestampTZ extends JdbcType(Types.TIMESTAMP_WITH_TIMEZONE, "TIMESTAMPTZ")
 
   case object Numeric extends JdbcType(Types.NUMERIC, "NUMERIC")
   case object Decimal extends JdbcType(Types.DECIMAL, "DECIMAL")
