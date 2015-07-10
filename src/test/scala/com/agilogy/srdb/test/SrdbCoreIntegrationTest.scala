@@ -19,7 +19,7 @@ class SrdbCoreIntegrationTest extends FlatSpec with MockFactory {
   val conn = mock[Connection]
   implicit val nameDbType = ColumnType[String].xmap[Name](Name.apply, _.v)
   implicit val ageDbType = ColumnType[Int].xmap[Age](Age.apply, _.v)
-  implicit val personReader = dbType(notNull[Name]("name"), notNull[Age]("age")).map[Person]((Person.apply _).tupled)
+  implicit val personReader = reader(notNull[Name]("name"), notNull[Age]("age")).map[Person]((Person.apply _).tupled)
 
   it should "be able to use simple column readers and arguments in srdb.core select" in {
     val sql = "select name,dept from people where name = ? and age > ?"

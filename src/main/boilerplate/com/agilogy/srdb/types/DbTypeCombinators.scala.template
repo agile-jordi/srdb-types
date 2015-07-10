@@ -31,7 +31,7 @@ trait DbTypeCombinators{
   def dbType[[#T1:DbType#]]: DbType[([#T1#])] = dbType1[[#T1#]]
   
   /** @group Reader and Type Combinators */
-  def dbType[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
+  def reader[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
   }
   #

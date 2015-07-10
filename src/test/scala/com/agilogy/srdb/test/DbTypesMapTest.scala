@@ -86,7 +86,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
   behavior of "combined named db readers map"
 
   it should "create a new reader mapping over a function" in {
-    implicit val personReader = dbType(notNull[String]("name"), notNull[Int]("age")).map[Person]((Person.apply _).tupled)
+    implicit val personReader = reader(notNull[String]("name"), notNull[Int]("age")).map[Person]((Person.apply _).tupled)
     inSequence {
       (rs.getString(_: String)).expects("name").returning("John")
       (rs.wasNull _).expects().returning(false)
@@ -94,6 +94,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
       (rs.wasNull _).expects().returning(false)
     }
     assert(get(rs)(personReader) === Person("John", 23))
+    //    assert(get(rs)(reader(notNull[Int]("number"), personReader)) === (42 -> Person("John", 23)))
   }
 
 }
