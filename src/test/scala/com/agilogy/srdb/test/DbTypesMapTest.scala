@@ -13,11 +13,11 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
   val ps = mock[PreparedStatement]
   val rs = mock[ResultSet]
 
-  behavior of "atomic db types xmap"
+  behavior of "column types xmap"
 
   case class Name(v: String)
 
-  it should "create a new db type mapping over a function" in {
+  it should "create a new column type mapping over a function" in {
     implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply, _.v)
     inSequence {
       (ps.setString _).expects(1, "Jane")
@@ -30,7 +30,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
 
   behavior of "named db types xmap"
 
-  it should "create a new column type mapping over a function" in {
+  it should "create a named dbtype from a mapped column type" in {
     implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply, _.v)
     inSequence {
       (ps.setString _).expects(1, "Jane")
@@ -41,7 +41,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
     assert(get(rs)(notNull[Name]("name")) === Name("John"))
   }
 
-  //  behavior of "combined db types xmap"
+  behavior of "combined db types xmap"
 
   case class Person(name: String, age: Int)
 
