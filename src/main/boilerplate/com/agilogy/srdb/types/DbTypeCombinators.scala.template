@@ -8,7 +8,7 @@ trait DbTypeCombinators{
 
   [2..22#
   /** @group Reader and Type Combinators */
-  implicit def dbType1[[#T1:DbType#]]: DbType[([#T1#])] = new DbType[([#T1#])]{
+  implicit def dbType1[[#T1:DbType#]]: NotNullDbType[([#T1#])] = new NotNullDbType[([#T1#])]{
     [#private val t1 = implicitly[DbType[T1]]#
     ]
     override val length: Int = [#t1.length# + ]
@@ -20,7 +20,7 @@ trait DbTypeCombinators{
   }
 
   /** @group Reader and Type Combinators */
-  implicit def positionalDbReader1[[#T1:PositionalDbReader#]]: PositionalDbReader[([#T1#])] = new PositionalDbReader[([#T1#])]{
+  implicit def positionalDbReader1[[#T1:PositionalDbReader#]]: NotNullPositionalDbReader[([#T1#])] = new NotNullPositionalDbReader[([#T1#])]{
       [#private val t1 = implicitly[PositionalDbReader[T1]]#
       ]
       override val length: Int = [#t1.length# + ]
@@ -28,10 +28,10 @@ trait DbTypeCombinators{
     }
   
   /** @group Reader and Type Combinators */
-  def dbType[[#T1:DbType#]]: DbType[([#T1#])] = dbType1[[#T1#]]
+  def dbType[[#T1:DbType#]]: NotNullDbType[([#T1#])] = dbType1[[#T1#]]
   
   /** @group Reader and Type Combinators */
-  def reader[[#T1#]]([#t1:NamedDbReader[T1]#]): NamedDbReader[([#T1#])] = new NamedDbReader[([#T1#])]{
+  def reader[[#T1#]]([#t1:NamedDbReader[T1]#]): NotNullNamedDbReader[([#T1#])] = new NotNullNamedDbReader[([#T1#])]{
     override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
   }
   #
