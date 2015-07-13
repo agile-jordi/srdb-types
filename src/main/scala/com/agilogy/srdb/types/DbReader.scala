@@ -41,6 +41,8 @@ trait PositionalDbReader[T] extends DbReader[T] {
 
   self =>
 
+  type Id[+X] = X
+  type MT[_]
   type NotNull
   def optional: OptionalPositionalDbReader[NotNull]
   def notNull: NotNullPositionalDbReader[NotNull]
@@ -52,12 +54,15 @@ trait PositionalDbReader[T] extends DbReader[T] {
   def get(rs: ResultSet): T = get(rs, 1)
   def get(rs: ResultSet, pos: Int): T
 
+  def map[T2](f: NotNull => T2): DbReader[MT[T2]]
+
 }
 
 trait NotNullPositionalDbReader[T] extends PositionalDbReader[T] {
 
   self =>
 
+  type MT[X] = Id[X]
   type NotNull = T
   def optional: OptionalPositionalDbReader[T] = DerivedOptionalPositionalDbReader(this)
   def notNull: NotNullPositionalDbReader[T] = this
@@ -76,6 +81,7 @@ trait OptionalPositionalDbReader[T] extends PositionalDbReader[Option[T]] {
 
   self =>
 
+  type MT[X] = Option[X]
   type NotNull = T
   def optional: OptionalPositionalDbReader[T] = this
   def notNull: NotNullPositionalDbReader[T]

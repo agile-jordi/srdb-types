@@ -16,7 +16,10 @@ private[types] case object HasLength0 {
  * @tparam T The Scala type represeing values read from the `ResultSet` or values to be written to a `PreparedStatement`
  * @group API
  */
-trait DbType[T] extends PositionalDbReader[T] with DbWriter[T]
+trait DbType[T] extends PositionalDbReader[T] with DbWriter[T] {
+
+  def xmap[NN2](f: NotNull => NN2, xf: NN2 => NotNull): DbType[MT[NN2]]
+}
 
 trait NotNullDbType[T] extends DbType[T] with NotNullPositionalDbReader[T] {
 
@@ -30,7 +33,6 @@ trait NotNullDbType[T] extends DbType[T] with NotNullPositionalDbReader[T] {
 
     override val length: Int = self.length
   }
-
 }
 
 trait OptionalDbType[T] extends DbType[Option[T]] with OptionalPositionalDbReader[T] {
@@ -84,6 +86,6 @@ case class OptionalAtomicDbType[T](implicit columnType: ColumnType[T]) extends O
 
   override def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = columnType.set(ps, pos, value)
 
-  override def notNull: NotNullDbType[T] = NotNullAtomicDbType()
+  override def notNull: NotNullDbType[T] = NotNullAtomicDbType[T]()
 }
 
