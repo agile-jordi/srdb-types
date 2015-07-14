@@ -9,7 +9,7 @@ import java.sql.ResultSet
  *
  * It MUST NOT call `ResultSet.next`
  *
- * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]], which are subclasses of [[DbReader]] are implicitly available for every [[ColumnType]]
+ * A [[NotNullDbType]] and an [[OptionalDbType]], which are subclasses of [[DbReader]] are implicitly available for every [[ColumnType]]
  *
  * @tparam T The Scala class returned when reading from the `ResultSet`
  * @group API
@@ -29,7 +29,7 @@ trait DbReader[T] extends (ResultSet => T) {
 /**
  * A [[DbReader]] that reads consecutive columns by position, instead of reading them by name
  *
- * A [[NotNullAtomicDbType]] and an [[OptionalAtomicDbType]], which are subclasses of [[PositionalDbReader]] are implicitly available for every [[ColumnType]]
+ * A [[NotNullDbType]] and an [[OptionalDbType]], which are subclasses of [[PositionalDbReader]] are implicitly available for every [[ColumnType]]
  *
  * An instance of [[PositionalDbReader]]`[(T1,...,Tn)]` is available implicitly from [[PositionalDbReader]]`[T1]` to [[PositionalDbReader]]`[Tn]`.
  * An instance of [[DbType]]`[(T1,...,Tn)]` (which a subclass of [[PositionalDbReader]]`[(T1,...,Tn)]`)  is available implicitly from [[DbType]]`[T1]` to [[DbType]]`[Tn]`.
@@ -97,7 +97,7 @@ trait OptionalPositionalDbReader[T] extends PositionalDbReader[Option[T]] {
   def map[T2](f: (T) => T2): OptionalPositionalDbReader[T2] = new DerivedOptionalPositionalDbReader[T2](notNull.map(f))
 }
 
-case class DerivedOptionalPositionalDbReader[T](notNull: NotNullPositionalDbReader[T]) extends OptionalPositionalDbReader[T]
+private[types] case class DerivedOptionalPositionalDbReader[T](notNull: NotNullPositionalDbReader[T]) extends OptionalPositionalDbReader[T]
 
 /**
  * A [[DbReader]] that reads columns by name, instead of reading them by position
@@ -125,7 +125,7 @@ trait NotNullNamedDbReader[T] extends NamedDbReader[T] {
 
   type NotNull = T
   def notNull: NotNullNamedDbReader[T] = this
-  def optional: OptionalNamedDbReader[T] = DerivedOptionalNamedDbReader(this)
+  def optional: OptionalNamedDbReader[T] = OptionalNamedDbReader(this)
 
   def map[T2](f: (T) => T2): NotNullNamedDbReader[T2] = new NotNullNamedDbReader[T2] {
 
@@ -135,12 +135,11 @@ trait NotNullNamedDbReader[T] extends NamedDbReader[T] {
 
 }
 
-trait OptionalNamedDbReader[T] extends NamedDbReader[Option[T]] {
+case class OptionalNamedDbReader[T](notNull: NotNullNamedDbReader[T]) extends NamedDbReader[Option[T]] {
 
   self =>
 
   type NotNull = T
-  def notNull: NotNullNamedDbReader[T]
   def optional: OptionalNamedDbReader[T] = this
 
   override def get(rs: ResultSet): Option[T] = try {
@@ -149,36 +148,21 @@ trait OptionalNamedDbReader[T] extends NamedDbReader[Option[T]] {
     case ncre: NullColumnReadException => None
   }
 
-  def map[T2](f: (T) => T2): OptionalNamedDbReader[T2] = new DerivedOptionalNamedDbReader[T2](notNull.map(f))
+  def map[T2](f: (T) => T2): OptionalNamedDbReader[T2] = OptionalNamedDbReader[T2](notNull.map(f))
 
 }
 
-case class DerivedOptionalNamedDbReader[T](notNull: NotNullNamedDbReader[T]) extends OptionalNamedDbReader[T]
-
-/**
- * A [[NamedDbReader]] that reads a single not null column and always returns a result
- *
- * An instance of [[NotNullAtomicNamedDbReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.notNull]]
- *
- * @tparam T The Scala class returned when reading from the `ResultSet`
- * @group API
- */
-case class NotNullAtomicNamedDbReader[T: ColumnType](name: String) extends NotNullNamedDbReader[T] {
-
-  override def get(rs: ResultSet): T = implicitly[ColumnType[T]].get(rs, name).getOrElse(throw new NullColumnReadException)
-}
-
-/**
- * A [[NamedDbReader]] that reads a single nullable column and may return `Some` result or `None` if the column was null
- *
- * An instance of [[OptionalAtomicNamedReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.optional]]
- *
- * @tparam T The Scala class returned when reading from the `ResultSet`
- * @group API
- */
-case class OptionalAtomicNamedReader[T: ColumnType](name: String) extends OptionalNamedDbReader[T] {
-
-  override def get(rs: ResultSet): Option[T] = implicitly[ColumnType[T]].get(rs, name)
-
-  override def notNull: NotNullNamedDbReader[T] = NotNullAtomicNamedDbReader(name)
-}
+///**
+// * A [[NamedDbReader]] that reads a single nullable column and may return `Some` result or `None` if the column was null
+// *
+// * An instance of [[OptionalAtomicNamedReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.optional]]
+// *
+// * @tparam T The Scala class returned when reading from the `ResultSet`
+// * @group API
+// */
+//case class OptionalAtomicNamedReader[T: ColumnType](name: String) extends OptionalNamedDbReader[T] {
+//
+//  override def get(rs: ResultSet): Option[T] = implicitly[ColumnType[T]].get(rs, name)
+//
+//  override def notNull: NotNullNamedDbReader[T] = NotNullAtomicNamedDbReader(name)
+//}

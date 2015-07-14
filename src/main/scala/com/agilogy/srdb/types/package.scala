@@ -7,32 +7,57 @@ import scala.language.implicitConversions
 package object types extends ColumnTypeInstances with DbTypeCombinators {
 
   /**
-   * Exposes an implicit [[NotNullAtomicDbType]] for each [[ColumnType]] implicitly available
-   * @tparam T The Scala type for which the [[NotNullAtomicDbType]] is to be exposed
+   * Exposes an implicit [[NotNullDbType]] for each [[ColumnType]] implicitly available
+   * @tparam T The Scala type for which the [[NotNullDbType]] is to be exposed
    * @group API
    */
-  implicit def notNullView[T: ColumnType]: NotNullAtomicDbType[T] = NotNullAtomicDbType[T]
+  implicit def notNullView[T: ColumnType]: NotNullDbType[T] = new NotNullDbType[T] {
+
+    private val columnType = implicitly[ColumnType[T]]
+
+    override val length: Int = 1
+
+    override def get(rs: ResultSet, pos: Int): T = columnType.get(rs, pos).getOrElse(throw new NullColumnReadException)
+
+    override def set(ps: PreparedStatement, pos: Int, value: T): Unit = columnType.set(ps, pos, Some(value))
+
+  }
 
   /**
-   * Exposes an implicit [[OptionalAtomicDbType]] for each [[ColumnType]] implicitly available
-   * @tparam T The Scala type for which the [[OptionalAtomicDbType]] is to be exposed
+   * Exposes an implicit [[OptionalDbType]] for each [[ColumnType]] implicitly available
+   * @tparam T The Scala type for which the [[OptionalDbType]] is to be exposed
    * @group API
    */
-  implicit def optionalView[T: ColumnType]: OptionalAtomicDbType[T] = OptionalAtomicDbType[T]
+  implicit def optionalView[T: ColumnType]: OptionalDbType[T] = new OptionalDbType[T] {
+
+    private val columnType = implicitly[ColumnType[T]]
+
+    override val length: Int = 1
+
+    override def get(rs: ResultSet, pos: Int): Option[T] = columnType.get(rs, pos)
+
+    override def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = columnType.set(ps, pos, value)
+
+    override def notNull: NotNullDbType[T] = notNullView[T]
+  }
 
   /**
-   * Returns a [[NotNullAtomicNamedDbReader]] that reads a column with the given name using the implicit [[ColumnType]] for `T`
-   * @tparam T The Scala type for which the [[NotNullAtomicNamedDbReader]] is to be returned
+   * Returns a [[NotNullNamedDbReader]] that reads a column with the given name using the implicit [[ColumnType]] for `T`
+   * @tparam T The Scala type for which the [[NotNullNamedDbReader]] is to be returned
    * @group API
    */
-  def notNull[T: ColumnType](name: String): NotNullAtomicNamedDbReader[T] = NotNullAtomicNamedDbReader[T](name)
+  def notNull[T: ColumnType](name: String): NotNullNamedDbReader[T] = new NotNullNamedDbReader[T] {
+
+    override def get(rs: ResultSet): T = implicitly[ColumnType[T]].get(rs, name).getOrElse(throw new NullColumnReadException)
+
+  }
 
   /**
-   * Returns an [[OptionalAtomicNamedReader]] that reads a column with the given name using the implicit [[ColumnType]] for `T`
-   * @tparam T The Scala type for which the [[OptionalAtomicNamedReader]] is to be returned
+   * Returns an [[OptionalNamedDbReader]] that reads a column with the given name using the implicit [[ColumnType]] for `T`
+   * @tparam T The Scala type for which the [[OptionalNamedDbReader]] is to be returned
    * @group API
    */
-  def optional[T: ColumnType](name: String): OptionalAtomicNamedReader[T] = OptionalAtomicNamedReader[T](name)
+  def optional[T: ColumnType](name: String): OptionalNamedDbReader[T] = notNull[T](name).optional
 
   /**
    * Sets a `T` parameter in a `PreparedStatement` using a [[DbWriter]] (or [[DbType]]).
