@@ -25,7 +25,7 @@ trait NotNullDbType[T] extends DbType[T] with NotNullPositionalDbReader[T] {
 
   self =>
 
-  def xmap[T2](f: T => T2, xf: T2 => T): NotNullDbType[T2] = new NotNullDbType[T2] {
+  override def xmap[T2](f: T => T2, xf: T2 => T): NotNullDbType[T2] = new NotNullDbType[T2] {
 
     override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs, pos))
 

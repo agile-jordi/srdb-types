@@ -18,11 +18,15 @@ trait DbReader[T] extends (ResultSet => T) {
 
   self =>
 
+  type Id[+X] = X
+  type MT[_]
+  type NotNull
+
   def get(rs: ResultSet): T
 
   def apply(rs: ResultSet): T = get(rs)
 
-  //  def map[T2](f: T => T2): DbReader[T2]
+  def map[T2](f: NotNull => T2): DbReader[MT[T2]]
 
 }
 
@@ -41,9 +45,6 @@ trait PositionalDbReader[T] extends DbReader[T] {
 
   self =>
 
-  type Id[+X] = X
-  type MT[_]
-  type NotNull
   def optional: OptionalPositionalDbReader[NotNull]
   def notNull: NotNullPositionalDbReader[NotNull]
 
@@ -54,7 +55,7 @@ trait PositionalDbReader[T] extends DbReader[T] {
   def get(rs: ResultSet): T = get(rs, 1)
   def get(rs: ResultSet, pos: Int): T
 
-  def map[T2](f: NotNull => T2): DbReader[MT[T2]]
+  def map[T2](f: NotNull => T2): PositionalDbReader[MT[T2]]
 
 }
 
@@ -111,7 +112,6 @@ trait NamedDbReader[T] extends DbReader[T] {
 
   self =>
 
-  type NotNull
   def notNull: NotNullNamedDbReader[NotNull]
   def optional: OptionalNamedDbReader[NotNull]
 
@@ -123,6 +123,7 @@ trait NotNullNamedDbReader[T] extends NamedDbReader[T] {
 
   self =>
 
+  type MT[X] = X
   type NotNull = T
   def notNull: NotNullNamedDbReader[T] = this
   def optional: OptionalNamedDbReader[T] = OptionalNamedDbReader(this)
@@ -140,6 +141,7 @@ case class OptionalNamedDbReader[T](notNull: NotNullNamedDbReader[T]) extends Na
   self =>
 
   type NotNull = T
+  type MT[X] = Option[X]
   def optional: OptionalNamedDbReader[T] = this
 
   override def get(rs: ResultSet): Option[T] = try {
