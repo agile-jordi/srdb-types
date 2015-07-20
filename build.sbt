@@ -4,7 +4,7 @@ organization := "com.agilogy"
 
 name := "srdb-types"
 
-version := "1.0.3-SNAPSHOT"
+version := "1.1"
 
 scalaVersion := "2.11.6"
 
