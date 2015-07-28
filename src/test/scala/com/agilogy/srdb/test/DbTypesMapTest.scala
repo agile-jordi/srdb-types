@@ -15,17 +15,22 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
 
   behavior of "column types xmap"
 
-  case class Name(v: String)
+  case class Name(v: String) {
+    require(v != null)
+  }
 
   it should "create a new column type mapping over a function" in {
     implicit val nameColumnType = ColumnType[String].xmap[Name](Name.apply, _.v)
     inSequence {
       (ps.setString _).expects(1, "Jane")
+      (ps.setNull(_: Int, _: Int)).expects(2, JdbcType.Varchar.code)
       (rs.getString(_: Int)).expects(1).returning("John")
       (rs.wasNull _).expects().returning(false)
+      (rs.getString(_: Int)).expects(2).returning(null)
+      (rs.wasNull _).expects().returning(true)
     }
-    set(ps, Name("Jane"))
-    assert(get[Name](rs) === Name("John"))
+    set(ps, (Name("Jane"), Option.empty[Name]))
+    assert(get[(Name, Option[Name])](rs) === (Name("John") -> None))
   }
 
   behavior of "named db types xmap"

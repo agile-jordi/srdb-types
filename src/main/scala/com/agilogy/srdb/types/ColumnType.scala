@@ -45,13 +45,23 @@ sealed trait ColumnType[T] {
 
   def xmap[T2](f: T => T2, xf: T2 => T): ColumnType[T2] = new ColumnType[T2] {
 
-    override protected[types] def toJdbc(v: T2): AnyRef = self.toJdbc(xf(v))
+    protected[types] override def toJdbc(v: T2): AnyRef = self.toJdbc(xf(v))
 
-    override def unsafeSet(ps: PreparedStatement, pos: Int, value: T2): Unit = self.unsafeSet(ps, pos, xf(value))
+    protected[types] override def unsafeSet(ps: PreparedStatement, pos: Int, value: T2): Unit = self.unsafeSet(ps, pos, xf(value))
 
-    override def unsafeGet(rs: ResultSet, pos: Int): T2 = f(self.unsafeGet(rs, pos))
+    // TODO: We should be able to map from a primitive to another one
+    // Therefore, we should remove this null.asInstanceOf[T2]
+    protected[types] override def unsafeGet(rs: ResultSet, pos: Int): T2 = {
+      val v = self.unsafeGet(rs, pos)
+      if (v == null) null.asInstanceOf[T2] else f(v)
+    }
 
-    override def unsafeGet(rs: ResultSet, name: String): T2 = f(self.unsafeGet(rs, name))
+    // TODO: We should be able to map from a primitive to another one
+    // Therefore, we should remove this null.asInstanceOf[T2]
+    protected[types] override def unsafeGet(rs: ResultSet, name: String): T2 = {
+      val v = self.unsafeGet(rs, name)
+      if (v == null) null.asInstanceOf[T2] else f(v)
+    }
 
     override val jdbcTypes: Seq[JdbcType] = self.jdbcTypes
 
