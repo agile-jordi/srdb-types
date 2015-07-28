@@ -152,7 +152,7 @@ trait ColumnTypeInstances {
       if (ts == null) null
       else new java.util.Date(ts.getTime)
     },
-    JdbcType.Timestamp
+    JdbcType.TimestampTZ
   )
 
   /** @group Column type instances */
