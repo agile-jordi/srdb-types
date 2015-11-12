@@ -1,5 +1,6 @@
 package com.agilogy.srdb.types
 
+import java.sql
 import java.sql.{ Timestamp, PreparedStatement, ResultSet }
 import java.util.Date
 import scala.collection.mutable.ListBuffer
@@ -125,38 +126,24 @@ trait ColumnTypeInstances {
   /** @group Column type instances */
   implicit val DbBoolean = ColumnType.from[Boolean](wrarp, _.setBoolean(_, _), _.getBoolean(_: Int), _.getBoolean(_: String), JdbcType.Boolean)
 
+  /** @group Column type instances */
+  val DbDateJdbc: ColumnType[sql.Date] = ColumnType.from[java.sql.Date](identity, _.setDate(_, _), _.getDate(_), _.getDate(_), JdbcType.Date)
+
+  /** @group Column type instances */
+  val DbTimestampJdbc: ColumnType[sql.Timestamp] = ColumnType.from[Timestamp](identity, _.setTimestamp(_, _), _.getTimestamp(_), _.getTimestamp(_), JdbcType.TimestampTZ)
+
   private def toSqlDate(d: java.util.Date) = new java.sql.Date(d.getTime)
 
   private def toSqlTimestamp(d: java.util.Date) = new Timestamp(d.getTime)
 
   /** @group Column type instances */
-  val DbDate = ColumnType.from[java.util.Date](
-    toSqlDate,
-    (ps, pos, v) => ps.setDate(pos, toSqlDate(v)),
-    _.getDate(_: Int),
-    _.getDate(_: String),
-    JdbcType.Date
-  )
+  val DbDate: ColumnType[java.util.Date] = DbDateJdbc.xmap[java.util.Date](sd => new java.util.Date(sd.getTime), toSqlDate)
 
   /** @group Column type instances */
-  implicit val DbTimestamp: ColumnType[Date] = ColumnType.from[java.util.Date](
-    toSqlTimestamp,
-    (ps, pos, v) => ps.setTimestamp(pos, toSqlTimestamp(v)),
-    { (rs, pos) =>
-      val ts = rs.getTimestamp(pos)
-      if (ts == null) null
-      else new java.util.Date(ts.getTime)
-    },
-    { (rs, name) =>
-      val ts = rs.getTimestamp(name)
-      if (ts == null) null
-      else new java.util.Date(ts.getTime)
-    },
-    JdbcType.TimestampTZ
-  )
+  implicit val DbTimestamp: ColumnType[java.util.Date] = DbTimestampJdbc.xmap[java.util.Date](ts => new java.util.Date(ts.getTime), toSqlTimestamp)
 
   /** @group Column type instances */
-  implicit val DbBigDecimal = ColumnType.from[BigDecimal](
+  implicit val DbBigDecimal: ColumnType[BigDecimal] = ColumnType.from[BigDecimal](
     _.bigDecimal,
     (ps, pos, v) => ps.setBigDecimal(pos, v.bigDecimal), { (rs, pos) =>
       val jbd: java.math.BigDecimal = rs.getBigDecimal(pos)
@@ -171,18 +158,7 @@ trait ColumnTypeInstances {
   )
 
   /** @group Column type instances */
-  implicit val DbBigInt = ColumnType.from[BigInt](
-    v => BigDecimal(v).bigDecimal,
-    (ps, pos, v) => ps.setBigDecimal(pos, BigDecimal(v).bigDecimal), { (rs, pos) =>
-      val bd = rs.getBigDecimal(pos)
-      if (bd == null) null
-      else bd.toBigIntegerExact
-    }, { (rs, name) =>
-      val bd = rs.getBigDecimal(name)
-      if (bd == null) null
-      else bd.toBigIntegerExact
-    }, JdbcType.Numeric
-  )
+  implicit val DbBigInt: ColumnType[BigInt] = DbBigDecimal.xmap[BigInt](_.toBigIntExact.get, bi => BigDecimal(bi).bigDecimal)
 
   /** @group Column type instances */
   def arrayDbType[T: ColumnType: ClassTag](databaseTypeName: String): ColumnType[Seq[T]] = new ColumnType[Seq[T]] {
