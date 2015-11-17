@@ -3,6 +3,7 @@ package com.agilogy.srdb.test
 import java.sql.{ ResultSet, PreparedStatement, Connection }
 
 import com.agilogy.srdb.types._
+import org.scalamock.CallHandler0
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
@@ -19,7 +20,7 @@ class ArrayDbTypesTest extends FlatSpec with MockFactory {
     val arr = mock[java.sql.Array]
     implicit val intArrayDbType = arrayDbType[Int]("int")
     val arrRs = mock[ResultSet]
-    def expectReadArray() = {
+    def expectReadArray(): CallHandler0[Boolean] = {
       (() => arr.getResultSet).expects().returning(arrRs)
       (arrRs.next _).expects().returning(true)
       (arrRs.getInt(_: Int)).expects(2).returning(1)
@@ -58,7 +59,7 @@ class ArrayDbTypesTest extends FlatSpec with MockFactory {
     val arr = mock[java.sql.Array]
     implicit val intArrayDbType = arrayDbType[Id]("bigint")
     val arrRs = mock[ResultSet]
-    def expectReadArray() = {
+    def expectReadArray(): CallHandler0[Boolean] = {
       (() => arr.getResultSet).expects().returning(arrRs)
       (arrRs.next _).expects().returning(true)
       (arrRs.getLong(_: Int)).expects(2).returning(1l)

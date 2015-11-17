@@ -31,6 +31,8 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
     }
     set(ps, (Name("Jane"), Option.empty[Name]))
     assert(get[(Name, Option[Name])](rs) === (Name("John") -> None))
+    //TODO: Why the next line won't compile?
+    //assert(get[(Name, Option[Name])](rs)(reader2(reader1[Name], optionalReader[Name])) === (Name("John") -> None))
   }
 
   behavior of "named db types xmap"
@@ -50,22 +52,8 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
 
   case class Person(name: String, age: Int)
 
-  it should "create a new compound db type mapping over a function" in {
-    implicit val personDbType = dbType[String, Int].xmap[Person](Person.tupled, Person.unapply(_).get)
-    inSequence {
-      (ps.setString _).expects(1, "Jane")
-      (ps.setInt _).expects(2, 25)
-      (rs.getString(_: Int)).expects(1).returning("John")
-      (rs.wasNull _).expects().returning(false)
-      (rs.getInt(_: Int)).expects(2).returning(23)
-      (rs.wasNull _).expects().returning(false)
-    }
-    set(ps, Person("Jane", 25))
-    assert(get[Person](rs) === Person("John", 23))
-  }
-
   it should "create a new compound db reads mapping over a function" in {
-    implicit val personDbReader = dbType[String, Int].map[Person](Person.tupled)
+    implicit val personDbReader = reader[String, Int].map[Person](Person.tupled)
     inSequence {
       (rs.getString(_: Int)).expects(1).returning("John")
       (rs.wasNull _).expects().returning(false)
@@ -76,7 +64,7 @@ class DbTypesMapTest extends FlatSpec with MockFactory {
   }
 
   it should "create compound db readers from compound db readers" in {
-    implicit val personDbReader = dbType[String, Int].map[Person](Person.tupled)
+    implicit val personDbReader = reader[String, Int].map[Person](Person.tupled)
     inSequence {
       (rs.getInt(_: Int)).expects(1).returning(42)
       (rs.wasNull _).expects().returning(false)

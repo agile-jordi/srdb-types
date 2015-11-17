@@ -149,8 +149,8 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
       (rs.getDate(_: String)).expects("c").returning(sqlDate)
       (rs.wasNull _).expects().returning(false)
     }
-    set(ps, d)(notNullView(DbDate))
-    assert(get[java.util.Date](rs)(notNullView(DbDate)) === d)
+    set(ps, d)(writer1(DbDate))
+    assert(get[java.util.Date](rs)(reader1(DbDate)) === d)
     assert(get(rs)(notNull[java.util.Date]("c")(DbDate)) === d)
   }
 
@@ -208,14 +208,26 @@ class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
   }
 
   it should "throw if it reads a null value" in {
+    val rsmd: ResultSetMetaData = mock[ResultSetMetaData]
+
     inSequence {
       (rs.getString(_: Int)).expects(1).returning(null)
       (rs.wasNull _).expects().returning(true)
+      (rs.getMetaData _).expects().returning(rsmd)
+      (rsmd.getColumnCount _).expects().returning(1)
+      (rsmd.getColumnName _).expects(1).returning("foo1")
+      (rs.getObject(_: Int)).expects(1).returning("value1")
       (rs.getString(_: String)).expects("c").returning(null)
       (rs.wasNull _).expects().returning(true)
+      (rs.getMetaData _).expects().returning(rsmd)
+      (rsmd.getColumnCount _).expects().returning(1)
+      (rsmd.getColumnName _).expects(1).returning("foo2")
+      (rs.getObject(_: Int)).expects(1).returning("value2")
     }
-    intercept[NullColumnReadException](get[String](rs))
-    checkException[NullColumnReadException](get(rs)(notNull[String]("c")))
+    val ncre = intercept[NullColumnReadException](get[String](rs))
+    assert(ncre === NullColumnReadException("1", Some(Seq("foo1" -> "value1"))))
+    val ncre2 = intercept[NullColumnReadException](get(rs)(notNull[String]("c")))
+    assert(ncre2 === NullColumnReadException("c", Some(Seq("foo2" -> "value2"))))
   }
 
 }

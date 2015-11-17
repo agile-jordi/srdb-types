@@ -2,38 +2,41 @@ package com.agilogy.srdb.types
 
 import java.sql.{PreparedStatement, ResultSet}
 
-/** @group Reader and Type Combinators */
+/** @group Reader and Writer Combinators */
 trait DbTypeCombinators{
 
-
   [2..22#
-  /** @group Reader and Type Combinators */
-  implicit def dbType1[[#T1:DbType#]]: NotNullDbType[([#T1#])] = new NotNullDbType[([#T1#])]{
-    [#private val t1 = implicitly[DbType[T1]]#
+  /** @group Reader and Writer Combinators */
+  implicit def reader1[[#T1:PositionalDbReader#]]: CombinedNotNullPositionalDbReader[([#T1#])] = new CombinedNotNullPositionalDbReader[([#T1#])]{
+    [#private val t1 = implicitly[PositionalDbReader[T1]]#
     ]
     override val length: Int = [#t1.length# + ]
     override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
+  }
+
+  /** @group Reader and Writer Combinators */
+  def reader[[#T1:PositionalDbReader#]]: CombinedNotNullPositionalDbReader[([#T1#])] = reader1[[#T1#]]
+
+  /** @group Reader and Writer Combinators */
+  def reader[[#T1#]]([#t1:NamedDbReader[T1]#]): CombinedNotNullNamedDbReader[([#T1#])] = new CombinedNotNullNamedDbReader[([#T1#])]{
+    override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
+  }
+
+  /** @group Reader and Writer Combinators */
+  implicit def writer1[[#T1:DbWriter#]]:CombinedDbWriter[([#T1#])] = new CombinedDbWriter[([#T1#])] {
+    [#private val t1 = implicitly[DbWriter[T1]]#
+    ]
+    override def length(value:([#T1#])): Int = [#t1.length(value._1)# + ]
     override def set(ps: PreparedStatement, pos: Int, value: ([#T1#])): Unit = {
-      [#t1.set(ps,pos [#+ t0.length# ], value._1)#
+      t##1.set(ps, pos, value._##1)
+      [2..#t1.set(ps, pos [2..#+ t0.length(value._0)# ], value._1)#
       ]
     }
   }
 
-  /** @group Reader and Type Combinators */
-  implicit def positionalDbReader1[[#T1:PositionalDbReader#]]: NotNullPositionalDbReader[([#T1#])] = new NotNullPositionalDbReader[([#T1#])]{
-      [#private val t1 = implicitly[PositionalDbReader[T1]]#
-      ]
-      override val length: Int = [#t1.length# + ]
-      override def get(rs: ResultSet, pos: Int): ([#T1#]) = ([#t1.get(rs,pos [#+ t0.length# ])#])
-    }
-  
-  /** @group Reader and Type Combinators */
-  def dbType[[#T1:DbType#]]: NotNullDbType[([#T1#])] = dbType1[[#T1#]]
-  
-  /** @group Reader and Type Combinators */
-  def reader[[#T1#]]([#t1:NamedDbReader[T1]#]): NotNullNamedDbReader[([#T1#])] = new NotNullNamedDbReader[([#T1#])]{
-    override def get(rs: ResultSet): ([#T1#]) = ([#t1.get(rs)#])
-  }
+  /** @group Reader and Writer Combinators */
+  def writer[[#T1:DbWriter#]]: CombinedDbWriter[([#T1#])] = writer1[[#T1#]]
+
   #
   // $COVERAGE-ON$
   // $COVERAGE-OFF$

@@ -2,6 +2,8 @@ package com.agilogy.srdb.types
 
 import java.sql.ResultSet
 
+import scala.util.control.NonFatal
+
 /**
  * A type class of readers of instances of type `T`.
  *
@@ -9,162 +11,58 @@ import java.sql.ResultSet
  *
  * It MUST NOT call `ResultSet.next`
  *
- * A [[NotNullDbType]] and an [[OptionalDbType]], which are subclasses of [[DbReader]] are implicitly available for every [[ColumnType]]
+ * An [[AtomicNotNullPositionalDbReader]] and an [[AtomicOptionalPositionalDbReader]], which are subclasses of
+ * [[DbReader]] are implicitly available for every [[ColumnType]]
  *
  * @tparam T The Scala class returned when reading from the `ResultSet`
  * @group API
  */
 trait DbReader[T] extends (ResultSet => T) {
 
-  self =>
-
-  type Id[+X] = X
-  type MT[_]
-  type NotNull
-
   def get(rs: ResultSet): T
 
   def apply(rs: ResultSet): T = get(rs)
 
-  def map[T2](f: NotNull => T2): DbReader[MT[T2]]
+  def map[T2](f: T => T2): DbReader[T2]
 
 }
 
-/**
- * A [[DbReader]] that reads consecutive columns by position, instead of reading them by name
- *
- * A [[NotNullDbType]] and an [[OptionalDbType]], which are subclasses of [[PositionalDbReader]] are implicitly available for every [[ColumnType]]
- *
- * An instance of [[PositionalDbReader]]`[(T1,...,Tn)]` is available implicitly from [[PositionalDbReader]]`[T1]` to [[PositionalDbReader]]`[Tn]`.
- * An instance of [[DbType]]`[(T1,...,Tn)]` (which a subclass of [[PositionalDbReader]]`[(T1,...,Tn)]`)  is available implicitly from [[DbType]]`[T1]` to [[DbType]]`[Tn]`.
- *
- * @tparam T The Scala class returned when reading from the `ResultSet`
- * @group API
- */
-trait PositionalDbReader[T] extends DbReader[T] {
+trait DbReaderOps {
 
   self =>
 
-  def optional: OptionalPositionalDbReader[NotNull]
-  def notNull: NotNullPositionalDbReader[NotNull]
+  implicit class DbReaderResultSetOps(rs: ResultSet) {
 
-  protected val t0 = HasLength0
-
-  val length: Int
-
-  def get(rs: ResultSet): T = get(rs, 1)
-  def get(rs: ResultSet, pos: Int): T
-
-  def map[T2](f: NotNull => T2): PositionalDbReader[MT[T2]]
-
-}
-
-trait NotNullPositionalDbReader[T] extends PositionalDbReader[T] {
-
-  self =>
-
-  type MT[X] = Id[X]
-  type NotNull = T
-  def optional: OptionalPositionalDbReader[T] = DerivedOptionalPositionalDbReader(this)
-  def notNull: NotNullPositionalDbReader[T] = this
-
-  def map[T2](f: (T) => T2): NotNullPositionalDbReader[T2] = new NotNullPositionalDbReader[T2] {
-
-    override val length: Int = self.length
-
-    override def get(rs: ResultSet): T2 = f(self.get(rs))
-    override def get(rs: ResultSet, pos: Int): T2 = f(self.get(rs, pos))
+    def get[T: AtomicPositionalDbReader](pos: Int): T = self.get[T](pos)(rs)
+    def get[T: AtomicPositionalDbReader](name: String): T = self.get[T](name)(rs)
   }
 
-}
-
-trait OptionalPositionalDbReader[T] extends PositionalDbReader[Option[T]] {
-
-  self =>
-
-  type MT[X] = Option[X]
-  type NotNull = T
-  def optional: OptionalPositionalDbReader[T] = this
-  def notNull: NotNullPositionalDbReader[T]
-
-  override val length: Int = notNull.length
-
-  override def get(rs: ResultSet, pos: Int): Option[T] = try {
-    Some(notNull.get(rs, pos))
-  } catch {
-    case e: NullColumnReadException => None
-  }
-
-  def map[T2](f: (T) => T2): OptionalPositionalDbReader[T2] = new DerivedOptionalPositionalDbReader[T2](notNull.map(f))
-}
-
-private[types] case class DerivedOptionalPositionalDbReader[T](notNull: NotNullPositionalDbReader[T]) extends OptionalPositionalDbReader[T]
-
-/**
- * A [[DbReader]] that reads columns by name, instead of reading them by position
- *
- * An instance of NamedDbReader can be obtained from a [[ColumnType]] using [[com.agilogy.srdb.types#notNull]] or [[com.agilogy.srdb.types#optional]].
- *
- * @tparam T The Scala class returned when reading from the `ResultSet`
- * @group API
- */
-trait NamedDbReader[T] extends DbReader[T] {
-
-  self =>
-
-  def notNull: NotNullNamedDbReader[NotNull]
-  def optional: OptionalNamedDbReader[NotNull]
-
-  override def get(rs: ResultSet): T
+  /**
+   * Reads a value from a `ResultSet` using the given [[DbReader]], which may read the column(s) by position or by name
+   * @param rs The `ResultSet` to get the value from
+   * @tparam T The Scala type of the read value
+   * @return The Scala representation of one or more columns according to the [[DbReader]] used
+   * @group API
+   */
+  def get[T: DbReader](rs: ResultSet): T = implicitly[DbReader[T]].get(rs)
+  def get[T: AtomicPositionalDbReader](pos: Int)(rs: ResultSet): T = implicitly[PositionalDbReader[T]].get(rs, pos)
+  def get[T: AtomicPositionalDbReader](name: String)(rs: ResultSet): T = implicitly[AtomicPositionalDbReader[T]].as(name).get(rs)
 
 }
 
-trait NotNullNamedDbReader[T] extends NamedDbReader[T] {
-
-  self =>
-
-  type MT[X] = X
-  type NotNull = T
-  def notNull: NotNullNamedDbReader[T] = this
-  def optional: OptionalNamedDbReader[T] = OptionalNamedDbReader(this)
-
-  def map[T2](f: (T) => T2): NotNullNamedDbReader[T2] = new NotNullNamedDbReader[T2] {
-
-    override def get(rs: ResultSet): T2 = f(self.get(rs))
-
-  }
-
-}
-
-case class OptionalNamedDbReader[T](notNull: NotNullNamedDbReader[T]) extends NamedDbReader[Option[T]] {
-
-  self =>
-
-  type NotNull = T
-  type MT[X] = Option[X]
-  def optional: OptionalNamedDbReader[T] = this
-
-  override def get(rs: ResultSet): Option[T] = try {
-    Some(notNull.get(rs))
-  } catch {
-    case ncre: NullColumnReadException => None
-  }
-
-  def map[T2](f: (T) => T2): OptionalNamedDbReader[T2] = OptionalNamedDbReader[T2](notNull.map(f))
-
-}
-
-///**
-// * A [[NamedDbReader]] that reads a single nullable column and may return `Some` result or `None` if the column was null
-// *
-// * An instance of [[OptionalAtomicNamedReader]] can be get from a [[ColumnType]] using [[com.agilogy.srdb.types.optional]]
-// *
-// * @tparam T The Scala class returned when reading from the `ResultSet`
-// * @group API
-// */
-//case class OptionalAtomicNamedReader[T: ColumnType](name: String) extends OptionalNamedDbReader[T] {
+//trait NotNullDbReader[T] extends DbReader[T] {
 //
-//  override def get(rs: ResultSet): Option[T] = implicitly[ColumnType[T]].get(rs, name)
+//  type NotNull = T
+//  type Optional = Option[T]
 //
-//  override def notNull: NotNullNamedDbReader[T] = NotNullAtomicNamedDbReader(name)
+//  def optional: OptionalDbReader[T]
+//
+//}
+//
+//trait OptionalDbReader[T] extends DbReader[Option[T]] {
+//
+//  type NotNull = T
+//  type Optional = Option[T]
+//
+//  def notNull: NotNullDbReader[T]
 //}

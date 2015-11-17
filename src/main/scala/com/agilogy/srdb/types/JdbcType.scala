@@ -1,6 +1,6 @@
 package com.agilogy.srdb.types
 
-import java.sql.Types
+import java.sql
 
 /**
  * A type according to the JDBC specification
@@ -14,31 +14,31 @@ sealed abstract class JdbcType(val code: Int, val name: String)
 
 /** @group API */
 object JdbcType {
-  case object TinyInt extends JdbcType(Types.TINYINT, "TINYINT")
-  case object SmallInt extends JdbcType(Types.SMALLINT, "SMALLINT")
-  case object Integer extends JdbcType(Types.INTEGER, "INTEGER")
-  case object BigInt extends JdbcType(Types.BIGINT, "BIGINT")
+  case object TinyInt extends JdbcType(sql.Types.TINYINT, "TINYINT")
+  case object SmallInt extends JdbcType(sql.Types.SMALLINT, "SMALLINT")
+  case object Integer extends JdbcType(sql.Types.INTEGER, "INTEGER")
+  case object BigInt extends JdbcType(sql.Types.BIGINT, "BIGINT")
 
-  case object Boolean extends JdbcType(Types.BOOLEAN, "BOOLEAN")
+  case object Boolean extends JdbcType(sql.Types.BOOLEAN, "BOOLEAN")
 
-  case object Varchar extends JdbcType(Types.VARCHAR, "VARCHAR")
-  case object Char extends JdbcType(Types.CHAR, "CHAR")
-  case object LongVarchar extends JdbcType(Types.LONGNVARCHAR, "LONGNVARCHAR")
+  case object Varchar extends JdbcType(sql.Types.VARCHAR, "VARCHAR")
+  case object Char extends JdbcType(sql.Types.CHAR, "CHAR")
+  case object LongVarchar extends JdbcType(sql.Types.LONGNVARCHAR, "LONGNVARCHAR")
 
-  case object Date extends JdbcType(Types.DATE, "DATE")
-  case object Time extends JdbcType(Types.TIME, "TIME")
-  // TODO: Java8 includes a Types.TIMESTAMPTZ constant. Should we use it?
-  case object TimestampTZ extends JdbcType(Types.TIMESTAMP, "TIMESTAMPTZ")
-  //  case object TimestampTZ extends JdbcType(Types.TIMESTAMP_WITH_TIMEZONE, "TIMESTAMPTZ")
+  case object Date extends JdbcType(sql.Types.DATE, "DATE")
+  case object Time extends JdbcType(sql.Types.TIME, "TIME")
+  // TODO: Java8 includes a sql.Types.TIMESTAMPTZ constant. Should we use it?
+  case object TimestampTZ extends JdbcType(sql.Types.TIMESTAMP, "TIMESTAMPTZ")
+  //  case object TimestampTZ extends JdbcType(sql.Types.TIMESTAMP_WITH_TIMEZONE, "TIMESTAMPTZ")
 
-  case object Numeric extends JdbcType(Types.NUMERIC, "NUMERIC")
-  case object Decimal extends JdbcType(Types.DECIMAL, "DECIMAL")
-  case object Float extends JdbcType(Types.FLOAT, "FLOAT")
-  case object Double extends JdbcType(Types.DOUBLE, "DOUBLE")
+  case object Numeric extends JdbcType(sql.Types.NUMERIC, "NUMERIC")
+  case object Decimal extends JdbcType(sql.Types.DECIMAL, "DECIMAL")
+  case object Float extends JdbcType(sql.Types.FLOAT, "FLOAT")
+  case object Double extends JdbcType(sql.Types.DOUBLE, "DOUBLE")
 
-  case object Array extends JdbcType(Types.ARRAY, "ARRAY")
+  case object Array extends JdbcType(sql.Types.ARRAY, "ARRAY")
 
-  case object Other extends JdbcType(Types.OTHER, "OTHER")
+  case object Other extends JdbcType(sql.Types.OTHER, "OTHER")
 
 }
 

@@ -164,7 +164,7 @@ trait ColumnTypeInstances {
   def arrayDbType[T: ColumnType: ClassTag](databaseTypeName: String): ColumnType[Seq[T]] = new ColumnType[Seq[T]] {
 
     val columnType = implicitly[ColumnType[T]]
-    val reader = implicitly[DbType[T]]
+    val reader = implicitly[PositionalDbReader[T]]
 
     override protected[types] def toJdbc(arrayValue: Seq[T]): Array[AnyRef] = Array(arrayValue.map(v => columnType.toJdbc(v).asInstanceOf[AnyRef]): _*)
 
