@@ -1,10 +1,10 @@
 import bintray.Keys._
+import com.typesafe.sbt.GitPlugin.autoImport._
+import com.typesafe.sbt.GitVersioning
 
 organization := "com.agilogy"
 
 name := "srdb-types"
-
-version := "2.0-SNAPSHOT"
 
 scalaVersion := "2.11.6"
 
@@ -87,8 +87,6 @@ ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := false
 
 Boilerplate.settings
 
-publishMavenStyle := false
-
 // --> bintray
 
 seq(bintrayPublishSettings:_*)
@@ -102,3 +100,17 @@ packageLabels in bintray := Seq("scala")
 licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
 // <-- bintray
+
+enablePlugins(GitVersioning)
+
+git.useGitDescribe := true
+
+resolvers += "Agilogy snapshots" at "http://188.166.95.201:8081/content/groups/public"
+
+publishMavenStyle := isSnapshot.value
+
+publishTo := {
+  val nexus = "http://188.166.95.201:8081/content/repositories/snapshots"
+  if (isSnapshot.value) Some("snapshots"  at nexus)
+  else publishTo.value
+}
