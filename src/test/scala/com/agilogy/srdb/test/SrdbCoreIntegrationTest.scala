@@ -7,6 +7,8 @@ import com.agilogy.srdb.types._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
+import scala.util.control.NonFatal
+
 case class Name(v: String) extends AnyVal
 case class Age(v: Int) extends AnyVal
 case class Person(name: Name, age: Age)
@@ -23,13 +25,12 @@ class SrdbCoreIntegrationTest extends FlatSpec with MockFactory {
 
   it should "be able to use simple column readers and arguments in srdb.core select" in {
     val sql = "select name,dept from people where name = ? and age > ?"
-    val selectPeopleByName = select(sql)(personReader)
+    val selectPeopleByName = select(sql)(_.toSeq[Person])
     inSequence {
       (conn.prepareStatement(_: String, _: Int)).expects(sql, Statement.NO_GENERATED_KEYS).returning(ps)
       (ps.setString(_: Int, _: String)).expects(1, "Jordi")
       (ps.setInt(_: Int, _: Int)).expects(2, 18)
-      (ps.executeQuery _).expects()
-      (ps.getResultSet _).expects().returning(rs)
+      (ps.executeQuery _).expects().returning(rs)
       (rs.next _).expects().returning(true)
       (rs.getString(_: String)).expects("name").returning("Jordi")
       (rs.wasNull _).expects().returning(false)
@@ -41,6 +42,7 @@ class SrdbCoreIntegrationTest extends FlatSpec with MockFactory {
     }
     val res = selectPeopleByName(conn, Name("Jordi"), Age(18))
     assert(res === List(Person(Name("Jordi"), Age(37))))
+
   }
 
 }
