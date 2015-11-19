@@ -2,9 +2,9 @@ package com.agilogy.srdb.types
 
 import java.sql
 import java.sql.{ Timestamp, PreparedStatement, ResultSet }
-import java.util.Date
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 /**
  * An type class representing an atomic database type
@@ -27,20 +27,37 @@ sealed trait ColumnType[T] {
 
   val jdbcTypes: Seq[JdbcType]
 
-  def get(rs: ResultSet, pos: Int): Option[T] = {
-    val res = unsafeGet(rs, pos)
-    if (rs.wasNull()) None else Some(res)
+  private def safeRead(rs: ResultSet, columnName: String, read: => T): Option[T] = {
+    try {
+      val res = read
+      if (rs.wasNull()) None else Some(res)
+    } catch {
+      case NonFatal(t) => throw ColumnReadExceptionWithCause(columnName, t, rs)
+    }
   }
 
-  def get(rs: ResultSet, name: String): Option[T] = {
-    val res = unsafeGet(rs, name)
-    if (rs.wasNull()) None else Some(res)
+  final def get(rs: ResultSet, pos: Int): Option[T] = {
+    safeRead(rs, pos.toString, unsafeGet(rs, pos))
   }
 
-  def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = {
-    value match {
-      case Some(t) => unsafeSet(ps, pos, t)
-      case None => ps.setNull(pos, jdbcTypes.head.code)
+  final def get(rs: ResultSet, name: String): Option[T] = {
+    safeRead(rs, name, unsafeGet(rs, name))
+  }
+
+  private def safeSet(pos: Int)(set: => Unit): Unit = {
+    try {
+      set
+    } catch {
+      case NonFatal(t) => throw ColumnWriteException(pos, t)
+    }
+  }
+
+  final def set(ps: PreparedStatement, pos: Int, value: Option[T]): Unit = {
+    safeSet(pos) {
+      value match {
+        case Some(t) => unsafeSet(ps, pos, t)
+        case None => ps.setNull(pos, jdbcTypes.head.code)
+      }
     }
   }
 
@@ -102,6 +119,7 @@ object ColumnType {
  * Available instances of [[ColumnType]]
  * @group Column type instances
  */
+//noinspection ScalaStyle
 trait ColumnTypeInstances {
 
   private val wrarp: (AnyVal) => AnyRef = (v: AnyVal) => v.asInstanceOf[AnyRef]
