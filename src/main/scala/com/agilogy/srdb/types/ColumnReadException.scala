@@ -11,7 +11,16 @@ trait ColumnReadException extends RuntimeException {
 }
 
 case class ColumnReadExceptionWithCause(columnName: String, cause: Throwable, availableColumns: Option[Seq[(String, Any)]])
-  extends ColumnReadException
+    extends ColumnReadException {
+
+  override def getMessage: String =
+    s"""
+       |Exception reading column $columnName
+       |  Cause message: ${cause.getMessage}""".stripMargin +
+      availableColumns.map(_.mkString("\n  Available columns are ", ", ", "."))
+
+  override def getCause: Throwable = cause
+}
 
 object ColumnReadExceptionWithCause {
   private[types] def apply(columnName: String, cause: Throwable, rs: ResultSet): ColumnReadExceptionWithCause =
