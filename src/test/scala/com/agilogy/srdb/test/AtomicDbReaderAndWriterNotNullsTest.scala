@@ -7,7 +7,7 @@ import org.scalatest.{ Resources, FlatSpec }
 import scala.reflect.Manifest
 import scala.util.control.NonFatal
 
-class AtomicDbTypesNotNullsTest extends FlatSpec with MockFactory {
+class AtomicDbReaderAndWriterNotNullsTest extends FlatSpec with MockFactory {
 
   val conn: Connection = mock[Connection]
   val ps: PreparedStatement = mock[PreparedStatement]
