@@ -41,9 +41,9 @@ trait DbCursorReaderOps {
     def foreach[T: DbCursorReader](cb: T => Unit): Unit = self.foreach[T](rs)(cb)
   }
 
-  implicit def cursorReader[T: DbReader]: DbCursorReader[T] = new DbCursorReader[T] {
-    override private[types] def read(rs: ResultSet): T = implicitly[DbReader[T]].get(rs)
-  }
+  implicit def dbReader2CursorReader[T](rowReader: DbReader[T]): DbCursorReader[T] = SimpleDbCursorReader(rowReader)
+
+  implicit def cursorReader[T: DbReader]: DbCursorReader[T] = SimpleDbCursorReader(implicitly[DbReader[T]])
 
   def toSeq[T: DbCursorReader](rs: ResultSet): Seq[T] = {
     val res = new ListBuffer[T]
@@ -88,9 +88,9 @@ case class SimpleDbCursorReader[RT](rowReader: DbReader[RT]) extends DbCursorRea
   override def map[T2](f: (RT) => T2): DbCursorReader[T2] = new SimpleDbCursorReader(rowReader.map(f))
 }
 
-object SimpleDbCursorReader {
-  implicit def simpleCursorReader[RT](dbReader: DbReader[RT]): SimpleDbCursorReader[RT] = SimpleDbCursorReader[RT](dbReader)
-}
+//object SimpleDbCursorReader {
+//  implicit def simpleCursorReader[RT](dbReader: DbReader[RT]): SimpleDbCursorReader[RT] = SimpleDbCursorReader[RT](dbReader)
+//}
 
 case class JoinReads[T1, T2](left: SimpleDbCursorReader[T1], right: DbCursorReader[T2]) extends DbCursorReader[(T1, T2)] {
 
