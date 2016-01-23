@@ -18,7 +18,7 @@ class Cursor(val rs: ResultSet) {
   }
 }
 
-trait DbCursorReader[RT] extends {
+trait DbCursorReader[RT] {
 
   private[types] def read(rs: ResultSet): RT
 

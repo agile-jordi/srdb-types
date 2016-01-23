@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
  * @tparam T The Scala class returned when reading from the `ResultSet`
  * @group API
  */
-trait DbReader[T] extends (ResultSet => T) {
+trait DbReader[T] {
 
   def get(rs: ResultSet): T
 
