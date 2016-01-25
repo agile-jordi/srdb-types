@@ -6,9 +6,9 @@ organization := "com.agilogy"
 
 name := "srdb-types"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.10.4","2.11.6")
+crossScalaVersions := Seq("2.10.6","2.11.7")
 
 resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
 
