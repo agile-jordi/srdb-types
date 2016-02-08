@@ -11,7 +11,7 @@ trait ColumnReadException extends RuntimeException {
 }
 
 case class ColumnReadExceptionWithCause(columnName: String, cause: Throwable, availableColumns: Option[Seq[(String, Any)]])
-    extends ColumnReadException {
+    extends RuntimeException(ColumnReadExceptionWithCause.getMessage(columnName, cause, availableColumns), cause) with ColumnReadException {
 
   override def getMessage: String =
     s"""
@@ -23,6 +23,13 @@ case class ColumnReadExceptionWithCause(columnName: String, cause: Throwable, av
 }
 
 object ColumnReadExceptionWithCause {
+
+  private[types] def getMessage(columnName: String, cause: Throwable, availableColumns: Option[Seq[(String, Any)]]): String =
+    s"""
+       |Exception reading column $columnName
+       |  Cause message: ${cause.getMessage}""".stripMargin +
+      availableColumns.map(_.mkString("\n  Available columns are ", ", ", "."))
+
   private[types] def apply(columnName: String, cause: Throwable, rs: ResultSet): ColumnReadExceptionWithCause =
     ColumnReadExceptionWithCause(columnName, cause, Utilities.getColumnNames(rs))
 }
@@ -39,16 +46,18 @@ private[types] object Utilities {
   }.toOption
 }
 
-case class NullColumnReadException(columnName: String, availableColumns: Option[Seq[(String, Any)]]) extends ColumnReadException {
-  override def getMessage: String = {
+case class NullColumnReadException(columnName: String, availableColumns: Option[Seq[(String, Any)]])
+    extends RuntimeException(NullColumnReadException.getMessage(columnName, availableColumns)) with ColumnReadException {
+}
+
+object NullColumnReadException {
+
+  private[types] def getMessage(columnName: String, availableColumns: Option[Seq[(String, Any)]]): String = {
     lazy val columnNamesMsg = availableColumns
       .map(_.mkString("Available columns are ", ", ", "."))
       .getOrElse("Available columns could not be determined.")
     s"Null found reading column supposedly not null column $columnName. $columnNamesMsg"
   }
-}
-
-object NullColumnReadException {
 
   private[types] def apply(columnName: String, rs: ResultSet): NullColumnReadException = {
     NullColumnReadException(columnName, Utilities.getColumnNames(rs))
