@@ -8,15 +8,15 @@ name := "srdb-types"
 
 scalaVersion := "2.11.7"
 
-crossScalaVersions := Seq("2.10.6","2.11.7")
+crossScalaVersions := Seq("2.10.6","2.11.7","2.12.6")
 
 resolvers += Resolver.url("Agilogy Scala",url("http://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
 
 libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.2" % "test",
-  "com.agilogy" %% "srdb-core" % "2.0" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
+  "com.agilogy" %% "srdb-core" % "2.0" % "test" // TODO update srdb-core to the latest version
 )
 
 // --> Linters
@@ -71,7 +71,7 @@ scalacOptions in Compile := (scalacOptions in Compile).value filterNot { switch 
 
 resolvers += "Linter Repository" at "https://hairyfotr.github.io/linteRepo/releases"
 
-addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.12")
+addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17")
 
 scalastyleFailOnError := true
 
@@ -81,9 +81,9 @@ scalastyleFailOnError := true
 // See https://github.com/sbt/sbt-scalariform
 scalariformSettings
 
-ScoverageSbtPlugin.ScoverageKeys.coverageExcludedPackages := "<empty>"
+coverageExcludedPackages := "<empty>"
 
-ScoverageSbtPlugin.ScoverageKeys.coverageHighlighting := false
+coverageHighlighting := false
 
 Boilerplate.settings
 

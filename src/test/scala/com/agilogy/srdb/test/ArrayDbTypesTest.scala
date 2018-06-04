@@ -1,9 +1,9 @@
 package com.agilogy.srdb.test
 
-import java.sql.{ ResultSet, PreparedStatement, Connection }
+import java.sql.{ Connection, PreparedStatement, ResultSet }
 
 import com.agilogy.srdb.types._
-import org.scalamock.CallHandler0
+import org.scalamock.handlers.CallHandler0
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FlatSpec
 
