@@ -97,8 +97,7 @@ object ColumnType {
     uset: (PreparedStatement, Int, T) => Unit,
     ugetp: (ResultSet, Int) => T,
     ugetn: (ResultSet, String) => T,
-    inJdbcTypes: JdbcType*
-  ): ColumnType[T] = new ColumnType[T] {
+    inJdbcTypes: JdbcType*): ColumnType[T] = new ColumnType[T] {
 
     require(inJdbcTypes.nonEmpty)
 
