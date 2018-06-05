@@ -6,7 +6,7 @@ organization := "com.agilogy"
 
 name := "srdb-types"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.12.6"
 
 crossScalaVersions := Seq("2.10.6","2.11.7","2.12.6")
 
@@ -16,7 +16,7 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41" % "test",
   "org.scalatest" %% "scalatest" % "3.0.5" % "test",
   "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % "test",
-  "com.agilogy" %% "srdb-core" % "2.0" % "test" // TODO update srdb-core to the latest version
+  "com.agilogy" %% "srdb-core" % "2.2" % "test"
 )
 
 // --> Linters
