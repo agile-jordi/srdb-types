@@ -50,7 +50,7 @@ trait AtomicPositionalDbReader[T] extends PositionalDbReader[T] {
   def as(name: String): AtomicNamedDbReader[T]
 }
 
-case class AtomicNotNullPositionalDbReader[T](implicit columnType: ColumnType[T]) extends AtomicPositionalDbReader[T] {
+case class AtomicNotNullPositionalDbReader[T]()(implicit columnType: ColumnType[T]) extends AtomicPositionalDbReader[T] {
 
   override type NotNull = T
   override type Optional = Option[T]
@@ -62,7 +62,7 @@ case class AtomicNotNullPositionalDbReader[T](implicit columnType: ColumnType[T]
   override def as(name: String): AtomicNamedDbReader[T] = AtomicNotNullNamedDbReader[T](name)
 }
 
-case class AtomicOptionalPositionalDbReader[T](implicit columnType: ColumnType[T]) extends AtomicPositionalDbReader[Option[T]] {
+case class AtomicOptionalPositionalDbReader[T]()(implicit columnType: ColumnType[T]) extends AtomicPositionalDbReader[Option[T]] {
 
   override type NotNull = T
   override type Optional = Option[T]

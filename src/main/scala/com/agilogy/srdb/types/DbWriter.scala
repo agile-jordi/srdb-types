@@ -84,7 +84,7 @@ case class MappedAtomicDbWriter[T1, T2](source: DbWriter[T1], cmf: T2 => T1) ext
   override def contraMap[T3](f: (T3) => T2): MappedAtomicDbWriter[T1, T3] = MappedAtomicDbWriter[T1, T3](source, f.andThen(cmf))
 }
 
-case class AtomicNotNullDbWriter[T](implicit columnType: ColumnType[T]) extends AtomicDbWriter[T] {
+case class AtomicNotNullDbWriter[T]()(implicit columnType: ColumnType[T]) extends AtomicDbWriter[T] {
 
   type NotNull = T
   type Optional = Option[T]
@@ -95,7 +95,7 @@ case class AtomicNotNullDbWriter[T](implicit columnType: ColumnType[T]) extends 
   def notNull: AtomicDbWriter[T] = this
 }
 
-case class AtomicOptionalDbWriter[T](implicit columnType: ColumnType[T]) extends AtomicDbWriter[Option[T]] {
+case class AtomicOptionalDbWriter[T]()(implicit columnType: ColumnType[T]) extends AtomicDbWriter[Option[T]] {
 
   type NotNull = T
   type Optional = Option[T]

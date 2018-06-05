@@ -89,7 +89,7 @@ Boilerplate.settings
 
 // --> bintray
 
-seq(bintrayPublishSettings:_*)
+Seq(bintrayPublishSettings:_*)
 
 repository in bintray := "scala"
 

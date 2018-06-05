@@ -2,8 +2,6 @@ package com.agilogy.srdb.types
 
 import java.sql.ResultSet
 
-import scala.util.control.NonFatal
-
 /**
  * A type class of readers of instances of type `T`.
  *

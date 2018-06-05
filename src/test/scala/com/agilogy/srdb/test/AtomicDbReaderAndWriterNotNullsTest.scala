@@ -2,7 +2,7 @@ package com.agilogy.srdb.test
 
 import java.sql._
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{ Resources, FlatSpec }
+import org.scalatest.FlatSpec
 
 import scala.reflect.Manifest
 import scala.util.control.NonFatal
