@@ -15,7 +15,7 @@ This is a Work In Progress...
 ```
 resolvers += "Agilogy GitLab" at "https://gitlab.com/api/v4/groups/583742/packages/maven"
 
-libraryDependencies += "com.agilogy" %% "srdb-types" % "2.1"
+libraryDependencies += "com.agilogy" %% "srdb-types" % "2.2"
 ```
 
 ## Usage
