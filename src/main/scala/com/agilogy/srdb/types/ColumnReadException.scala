@@ -11,7 +11,7 @@ trait ColumnReadException extends RuntimeException {
 }
 
 case class ColumnReadExceptionWithCause(columnName: String, cause: Throwable, availableColumns: Option[Seq[(String, Any)]])
-    extends RuntimeException(ColumnReadExceptionWithCause.getMessage(columnName, cause, availableColumns), cause) with ColumnReadException {
+  extends RuntimeException(ColumnReadExceptionWithCause.getMessage(columnName, cause, availableColumns), cause) with ColumnReadException {
 
   override def getMessage: String =
     s"""
@@ -47,7 +47,7 @@ private[types] object Utilities {
 }
 
 case class NullColumnReadException(columnName: String, availableColumns: Option[Seq[(String, Any)]])
-    extends RuntimeException(NullColumnReadException.getMessage(columnName, availableColumns)) with ColumnReadException {
+  extends RuntimeException(NullColumnReadException.getMessage(columnName, availableColumns)) with ColumnReadException {
 }
 
 object NullColumnReadException {
