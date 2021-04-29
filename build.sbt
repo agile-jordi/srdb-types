@@ -10,7 +10,7 @@ scalaVersion := "2.12.13"
 
 crossScalaVersions := Seq("2.11.7","2.12.13")
 
-resolvers += Resolver.url("Agilogy Scala",url("https://dl.bintray.com/agilogy/scala/"))(Resolver.ivyStylePatterns)
+resolvers += "Agilogy GitLab" at "https://gitlab.com/api/v4/groups/583742/packages/maven"
 
 libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.3-1102-jdbc41" % "test",
