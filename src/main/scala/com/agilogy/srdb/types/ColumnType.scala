@@ -171,8 +171,7 @@ trait ColumnTypeInstances {
       if (jbd == null) null
       else jbd
     },
-    JdbcType.Numeric
-  )
+    JdbcType.Numeric)
 
   /** @group Column type instances */
   implicit val DbBigInt: ColumnType[BigInt] = DbBigDecimal.xmap[BigInt](_.toBigIntExact.get, bi => BigDecimal(bi).bigDecimal)
